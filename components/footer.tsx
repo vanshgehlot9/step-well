@@ -29,28 +29,28 @@ export default function Footer() {
 
             {/* Top CTA Banner */}
             <div className="relative z-10 border-b border-white/[0.06]">
-                <div className="container mx-auto px-6 md:px-8 py-12 md:py-20">
-                    <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-10">
-                        <div className="max-w-2xl space-y-4">
+                <div className="container mx-auto px-5 md:px-8 py-10 md:py-20">
+                    <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-8 md:gap-10">
+                        <div className="max-w-2xl space-y-3 md:space-y-4">
                             <span className="text-accent-blue text-xs font-bold tracking-[0.3em] uppercase">
                                 Join the Movement
                             </span>
-                            <h2 className="text-3xl md:text-5xl lg:text-6xl font-serif font-light leading-[1.1] text-white">
-                                Every hand that cleans a stone<br />
-                                <span className="italic text-accent-blue/80">writes history.</span>
+                            <h2 className="text-2xl md:text-5xl lg:text-6xl font-serif font-light leading-[1.15] text-white">
+                                Every hand that cleans a stone<br className="hidden md:block" />
+                                <span className="italic text-accent-blue/80"> writes history.</span>
                             </h2>
                         </div>
-                        <div className="flex flex-col sm:flex-row gap-4">
+                        <div className="flex flex-col w-full sm:w-auto sm:flex-row gap-3 md:gap-4">
                             <Link
                                 href="/get-involved"
-                                className="group inline-flex items-center gap-3 bg-white text-primary-blue font-bold text-sm tracking-widest uppercase px-8 py-4 rounded-full hover:bg-accent-blue hover:text-white transition-all duration-300 shadow-2xl shadow-white/10"
+                                className="group inline-flex items-center justify-center gap-3 bg-white text-primary-blue font-bold text-sm tracking-widest uppercase px-6 md:px-8 py-4 rounded-full hover:bg-accent-blue hover:text-white transition-all duration-300 shadow-2xl shadow-white/10 active:scale-95"
                             >
                                 Become a Guardian
                                 <ArrowUpRight size={16} className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
                             </Link>
                             <Link
                                 href="/donate"
-                                className="group inline-flex items-center gap-3 border border-white/20 text-white font-bold text-sm tracking-widest uppercase px-8 py-4 rounded-full hover:bg-white/10 transition-all duration-300"
+                                className="group inline-flex items-center justify-center gap-3 border border-white/20 text-white font-bold text-sm tracking-widest uppercase px-6 md:px-8 py-4 rounded-full hover:bg-white/10 transition-all duration-300 active:scale-95"
                             >
                                 Donate
                                 <ArrowUpRight size={16} className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
@@ -62,8 +62,100 @@ export default function Footer() {
 
             {/* Main Footer Content */}
             <div className="relative z-10">
-                <div className="container mx-auto px-6 md:px-8 py-12 md:py-20">
-                    <div className="grid grid-cols-1 md:grid-cols-12 gap-12 lg:gap-16">
+                <div className="container mx-auto px-5 md:px-8 py-10 md:py-20">
+
+                    {/* Mobile Layout */}
+                    <div className="md:hidden space-y-8">
+                        {/* Brand */}
+                        <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-xl bg-accent-blue/10 border border-accent-blue/20 flex items-center justify-center">
+                                <Droplets size={18} className="text-accent-blue" />
+                            </div>
+                            <span className="font-serif text-xl font-bold text-white">
+                                Stepwells<span className="text-accent-blue">Renovater</span>
+                            </span>
+                        </div>
+
+                        <p className="text-white/40 leading-relaxed text-sm">
+                            Reviving Rajasthan&apos;s ancient water heritage, one stepwell at a time. A people&apos;s movement to preserve history and fight water scarcity.
+                        </p>
+
+                        {/* Quick Contact Cards */}
+                        <div className="grid grid-cols-1 gap-3">
+                            <a href="tel:+919571179677" className="flex items-center gap-4 bg-white/[0.04] border border-white/[0.08] rounded-2xl p-4 active:bg-white/[0.08] transition-colors">
+                                <div className="w-11 h-11 rounded-xl bg-accent-blue/10 flex items-center justify-center shrink-0">
+                                    <Phone size={18} className="text-accent-blue" />
+                                </div>
+                                <div>
+                                    <p className="text-white/40 text-[11px] uppercase tracking-widest font-bold mb-0.5">Call Us</p>
+                                    <p className="text-white text-sm font-medium">+91 95711 79677</p>
+                                </div>
+                            </a>
+
+                            <a href="mailto:support@stepwellsrenovaterfoundation.org" className="flex items-center gap-4 bg-white/[0.04] border border-white/[0.08] rounded-2xl p-4 active:bg-white/[0.08] transition-colors">
+                                <div className="w-11 h-11 rounded-xl bg-accent-blue/10 flex items-center justify-center shrink-0">
+                                    <Mail size={18} className="text-accent-blue" />
+                                </div>
+                                <div>
+                                    <p className="text-white/40 text-[11px] uppercase tracking-widest font-bold mb-0.5">Email</p>
+                                    <p className="text-white text-sm font-medium break-all">support@stepwellsrenovater<wbr />foundation.org</p>
+                                </div>
+                            </a>
+
+                            <a href="https://maps.google.com/?q=Toorji+Ka+Jhalra+Jodhpur" target="_blank" rel="noopener noreferrer" className="flex items-center gap-4 bg-white/[0.04] border border-white/[0.08] rounded-2xl p-4 active:bg-white/[0.08] transition-colors">
+                                <div className="w-11 h-11 rounded-xl bg-accent-blue/10 flex items-center justify-center shrink-0">
+                                    <MapPin size={18} className="text-accent-blue" />
+                                </div>
+                                <div>
+                                    <p className="text-white/40 text-[11px] uppercase tracking-widest font-bold mb-0.5">Location</p>
+                                    <p className="text-white text-sm font-medium">Near Toorji Ka Jhalra, Jodhpur</p>
+                                </div>
+                            </a>
+                        </div>
+
+                        {/* Mobile Nav Grid */}
+                        <div>
+                            <h4 className="text-[11px] font-bold tracking-[0.3em] uppercase text-white/30 mb-4">
+                                Quick Links
+                            </h4>
+                            <div className="grid grid-cols-3 gap-2">
+                                {navLinks.map((link) => (
+                                    <Link
+                                        key={link.name}
+                                        href={link.href}
+                                        className="bg-white/[0.04] border border-white/[0.08] rounded-xl py-3 px-3 text-center text-white/60 text-sm font-medium hover:text-white active:bg-white/[0.08] transition-all"
+                                    >
+                                        {link.name}
+                                    </Link>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Social Icons */}
+                        <div className="flex gap-3">
+                            <a
+                                href="https://instagram.com/stepwells_renovater"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex-1 h-12 rounded-xl bg-gradient-to-r from-purple-500/20 to-pink-500/20 border border-white/[0.08] flex items-center justify-center gap-2 text-white/70 active:bg-white/10 transition-all"
+                                aria-label="Instagram"
+                            >
+                                <Instagram size={18} />
+                                <span className="text-sm font-medium">Instagram</span>
+                            </a>
+                            <a
+                                href="mailto:support@stepwellsrenovaterfoundation.org"
+                                className="flex-1 h-12 rounded-xl bg-white/[0.05] border border-white/[0.08] flex items-center justify-center gap-2 text-white/70 active:bg-white/10 transition-all"
+                                aria-label="Email"
+                            >
+                                <Mail size={18} />
+                                <span className="text-sm font-medium">Email</span>
+                            </a>
+                        </div>
+                    </div>
+
+                    {/* Desktop Layout */}
+                    <div className="hidden md:grid grid-cols-12 gap-12 lg:gap-16">
 
                         {/* Brand Column */}
                         <div className="md:col-span-4 space-y-8">
@@ -76,7 +168,7 @@ export default function Footer() {
                                 </span>
                             </Link>
                             <p className="text-white/40 leading-relaxed text-[15px] max-w-sm">
-                                Reviving Rajasthan's ancient water heritage, one stepwell at a time. A people's movement to preserve history and fight water scarcity.
+                                Reviving Rajasthan&apos;s ancient water heritage, one stepwell at a time. A people&apos;s movement to preserve history and fight water scarcity.
                             </p>
 
                             {/* Social Links */}
@@ -163,14 +255,14 @@ export default function Footer() {
 
             {/* Bottom Bar */}
             <div className="relative z-10 border-t border-white/[0.06]">
-                <div className="container mx-auto px-6 md:px-8 py-6">
-                    <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-                        <p className="text-white/25 text-xs tracking-wider">
+                <div className="container mx-auto px-5 md:px-8 py-5 md:py-6">
+                    <div className="flex flex-col md:flex-row justify-between items-center gap-3 md:gap-4">
+                        <p className="text-white/25 text-[11px] md:text-xs tracking-wider text-center md:text-left">
                             &copy; {new Date().getFullYear()} Stepwells Renovater Foundation. All rights reserved.
                         </p>
-                        <p className="text-white/25 text-xs tracking-wider flex items-center gap-1.5">
+                        <p className="text-white/25 text-[11px] md:text-xs tracking-wider flex items-center gap-1.5">
                             <span className="inline-block w-1.5 h-1.5 rounded-full bg-accent-blue/40" />
-                            Built for Rajasthan's heritage
+                            Built for Rajasthan&apos;s heritage
                         </p>
                     </div>
                 </div>

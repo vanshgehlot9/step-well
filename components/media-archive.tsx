@@ -222,27 +222,24 @@ export default function MediaArchive() {
     };
 
     return (
-        <section className="py-32 bg-gradient-to-b from-primary-blue via-[#020617] to-black relative overflow-hidden" id="archive">
-            {/* Texture */}
-
-
+        <section className="py-16 md:py-32 bg-gradient-to-b from-primary-blue via-[#020617] to-black relative overflow-hidden" id="archive">
             <div className="container mx-auto px-4 md:px-6 relative z-10">
 
                 {/* Header */}
-                <div className="max-w-4xl mx-auto text-center mb-6 space-y-6">
+                <div className="max-w-4xl mx-auto text-center mb-4 md:mb-6 space-y-3 md:space-y-6">
                     <span className="text-accent-blue/80 font-sans text-[10px] tracking-[0.3em] uppercase font-bold border border-accent-blue/20 px-3 py-1 rounded-sm inline-block">
                         From Our Reels
                     </span>
-                    <h2 className="text-6xl md:text-9xl font-serif font-light text-white opacity-90 tracking-tighter select-none">
+                    <h2 className="text-4xl md:text-9xl font-serif font-light text-white opacity-90 tracking-tighter select-none">
                         BUILD REEL
                     </h2>
-                    <p className="font-serif italic text-white/50 text-xl tracking-wide max-w-2xl mx-auto">
+                    <p className="font-serif italic text-white/50 text-base md:text-xl tracking-wide max-w-2xl mx-auto">
                         Raw, unfiltered stories from the field. Every reel is a chapter of revival.
                     </p>
                 </div>
 
                 {/* Instagram Handle */}
-                <div className="flex justify-center mb-16">
+                <div className="flex justify-center mb-8 md:mb-16">
                     <a
                         href="https://www.instagram.com/stepwells_renovater"
                         target="_blank"
@@ -286,7 +283,7 @@ export default function MediaArchive() {
                             whileInView={{ opacity: 1, y: 0 }}
                             viewport={{ once: true, margin: "-50px" }}
                             transition={{ duration: 0.5, delay: index * 0.08 }}
-                            className="relative flex-shrink-0 w-[280px] md:w-[310px] snap-center"
+                            className="relative flex-shrink-0 w-[70vw] md:w-[310px] snap-center"
                         >
                             <ReelCard reel={reel} onExpand={() => setSelectedId(reel.id)} paused={selectedId !== null} />
                         </motion.div>
