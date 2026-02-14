@@ -1,0 +1,43 @@
+{
+    "rules": {
+        "users": {
+            "$uid": {
+                ".read": "auth != null && ($uid === auth.uid || root.child('users').child(auth.uid).child('role').val() === 'admin')",
+                ".write": "auth != null && ($uid === auth.uid || root.child('users').child(auth.uid).child('role').val() === 'admin')"
+            },
+            ".indexOn": ["createdAt", "role"]
+        },
+        "products": {
+            ".read": true,
+            ".write": "auth != null && root.child('users').child(auth.uid).child('role').val() === 'admin'",
+            ".indexOn": ["createdAt", "category", "active"]
+        },
+        "orders": {
+            ".read": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'admin' || query.orderByChild === 'userId' && query.equalTo === auth.uid)",
+            ".write": "auth != null",
+            ".indexOn": ["createdAt", "userId", "status"],
+            "$orderId": {
+                ".read": "auth != null && (data.child('userId').val() === auth.uid || root.child('users').child(auth.uid).child('role').val() === 'admin')",
+                ".write": "auth != null && (newData.child('userId').val() === auth.uid || root.child('users').child(auth.uid).child('role').val() === 'admin')"
+            }
+        },
+        "donations": {
+            ".read": "auth != null && root.child('users').child(auth.uid).child('role').val() === 'admin'",
+            ".write": "auth != null",
+            ".indexOn": ["createdAt", "userId", "status"],
+            "$donationId": {
+                ".read": "auth != null && (data.child('userId').val() === auth.uid || root.child('users').child(auth.uid).child('role').val() === 'admin')"
+            }
+        },
+        "volunteers": {
+            ".read": "auth != null && root.child('users').child(auth.uid).child('role').val() === 'admin'",
+            ".write": true,
+            ".indexOn": ["createdAt", "status"]
+        },
+        "projects": {
+            ".read": true,
+            ".write": "auth != null && root.child('users').child(auth.uid).child('role').val() === 'admin'",
+            ".indexOn": ["createdAt", "status"]
+        }
+    }
+}

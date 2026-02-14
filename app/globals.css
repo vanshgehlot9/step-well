@@ -1,26 +1,58 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #F8FAFC;
+  /* Slate 50 */
+  --foreground: #0F172A;
+  /* Slate 900 */
+
+  /* Custom Blue Theme */
+  --primary-blue: #0F172A;
+  /* Slate 900 - Deep Blue/Black */
+  --primary-blue-light: #1E293B;
+  /* Slate 800 */
+  --accent-blue: #0EA5E9;
+  /* Sky 500 - Vivid Blue */
+  --accent-blue-light: #38BDF8;
+  /* Sky 400 */
+  --surface-blue: #F0F9FF;
+  /* Sky 50 - Very light tint */
+  --surface-blue-dark: #E0F2FE;
+  /* Sky 100 */
+
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+
+  --color-primary-blue: var(--primary-blue);
+  --color-primary-blue-light: var(--primary-blue-light);
+  --color-accent-blue: var(--accent-blue);
+  --color-accent-blue-light: var(--accent-blue-light);
+  --color-surface-blue: var(--surface-blue);
+  --color-surface-blue-dark: var(--surface-blue-dark);
+
+  --font-sans: var(--font-inter);
+  --font-serif: var(--font-playfair);
+
+  --image-stepwell-pattern: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%230EA5E9' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* Custom Utilities */
+.bg-stepwell-pattern {
+  background-image: var(--image-stepwell-pattern);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  @apply bg-background text-foreground font-sans antialiased;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  @apply font-serif;
 }
