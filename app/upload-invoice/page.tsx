@@ -429,7 +429,7 @@ export default function UploadInvoicePage() {
                                             value={formData.name}
                                             onChange={(e) => handleInputChange("name", e.target.value)}
                                             className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-3 text-white text-sm placeholder:text-white/20 focus:outline-none focus:border-accent-blue/50 focus:ring-1 focus:ring-accent-blue/20 transition-all"
-                                            placeholder="Your full name"
+                                            placeholder="Enter your full name"
                                         />
                                     </div>
                                     <div>
@@ -442,7 +442,7 @@ export default function UploadInvoicePage() {
                                             value={formData.email}
                                             onChange={(e) => handleInputChange("email", e.target.value)}
                                             className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-3 text-white text-sm placeholder:text-white/20 focus:outline-none focus:border-accent-blue/50 focus:ring-1 focus:ring-accent-blue/20 transition-all"
-                                            placeholder="your@email.com"
+                                            placeholder="Enter your email"
                                         />
                                     </div>
                                 </div>
@@ -457,7 +457,7 @@ export default function UploadInvoicePage() {
                                             value={formData.phone}
                                             onChange={(e) => handleInputChange("phone", e.target.value)}
                                             className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-3 text-white text-sm placeholder:text-white/20 focus:outline-none focus:border-accent-blue/50 focus:ring-1 focus:ring-accent-blue/20 transition-all"
-                                            placeholder="+91 98765 43210"
+                                            placeholder="Enter phone number"
                                         />
                                     </div>
                                     <div>
@@ -469,7 +469,7 @@ export default function UploadInvoicePage() {
                                             value={formData.invoiceNumber}
                                             onChange={(e) => handleInputChange("invoiceNumber", e.target.value)}
                                             className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-3 text-white text-sm placeholder:text-white/20 focus:outline-none focus:border-accent-blue/50 focus:ring-1 focus:ring-accent-blue/20 transition-all"
-                                            placeholder="INV-001"
+                                            placeholder="Enter invoice number"
                                         />
                                     </div>
                                     <div>
@@ -481,7 +481,7 @@ export default function UploadInvoicePage() {
                                             value={formData.amount}
                                             onChange={(e) => handleInputChange("amount", e.target.value)}
                                             className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-3 text-white text-sm placeholder:text-white/20 focus:outline-none focus:border-accent-blue/50 focus:ring-1 focus:ring-accent-blue/20 transition-all"
-                                            placeholder="5,000"
+                                            placeholder="Enter amount"
                                         />
                                     </div>
                                 </div>

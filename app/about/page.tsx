@@ -1,160 +1,240 @@
 "use client";
 
 import { motion } from "framer-motion";
+import Image from "next/image";
+import Link from "next/link";
+import { Droplets, Landmark, Users, HeartHandshake, Droplet, Sparkles, ArrowRight, CheckCircle } from "lucide-react";
+
+const WHO_WE_ARE = [
+  {
+    title: "Our Purpose",
+    body: "Stepwell Renovation Foundation is a non-profit dedicated to the preservation, cleanliness, and promotion of India's historic stepwells and traditional water heritage.",
+  },
+  {
+    title: "Our Commitment",
+    body: "Inspired by the extraordinary work of Caron Rawnsley, whose decade-long efforts revived awareness of Jodhpur's stepwells, we reconnect communities with their cultural and environmental significance.",
+  },
+  {
+    title: "Dedicated Care",
+    body: "Our team of skilled professionals and passionate volunteers work tirelessly to restore stepwells from neglect, bringing life back to these architectural marvels of water engineering.",
+  },
+  {
+    title: "Roots of the Foundation",
+    body: "The Foundation was established by R.K. Padmaja Rathore, Ravindra Vishnoi, and Vijendra — individuals united by a commitment to preserving traditional water systems and India's architectural heritage.",
+  },
+  {
+    title: "Know More",
+    body: "We invite you to explore our initiatives, restoration projects, and the lasting impact we are making on heritage stepwells across Rajasthan and beyond.",
+  },
+];
+
+const MISSION_CARDS = [
+  { title: "Stepwell Conservation",         icon: Droplets,      desc: "To preserve and restore Rajasthan's ancient stepwells through skilled, community-led conservation." },
+  { title: "Heritage Awareness",            icon: Landmark,      desc: "To promote heritage awareness and educate communities on the cultural value of water architecture." },
+  { title: "Community Participation",       icon: Users,         desc: "To engage local communities and volunteers in hands-on stewardship of shared cultural spaces." },
+  { title: "Youth & Volunteer Engagement",  icon: HeartHandshake,desc: "To inspire youth through volunteering, creating the next generation of heritage guardians." },
+  { title: "Water Conservation",            icon: Droplet,       desc: "To revive traditional water systems and raise awareness of sustainable water practices." },
+  { title: "Restoration Projects",          icon: Sparkles,      desc: "To execute high-quality restoration projects with documented outcomes and community impact." },
+];
 
 export default function AboutPage() {
-    return (
-        <div className="bg-surface-blue min-h-screen text-primary-blue selection:bg-accent-blue selection:text-white">
-            {/* Hero Section - Keeping image but lighter feel */}
-            <section className="relative h-[80vh] flex items-center justify-center overflow-hidden">
-                <div className="absolute inset-0">
-                    <img
-                        src="https://images.unsplash.com/photo-1596484552834-8a45e8bc80f1?q=80&w=2971&auto=format&fit=crop"
-                        alt="Old Blue City Jodhpur"
-                        className="w-full h-full object-cover"
-                    />
-                    <div className="absolute inset-0 bg-white/10 mix-blend-overlay" />
-                    <div className="absolute inset-0 bg-gradient-to-t from-surface-blue via-transparent to-black/30" />
-                </div>
+  return (
+    <div className="bg-white min-h-screen pt-[80px] md:pt-[90px]">
 
-                <div className="relative z-10 text-center px-4 max-w-4xl mx-auto mt-20">
-                    <motion.div
-                        initial={{ opacity: 0, y: 30 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 1, ease: "easeOut" }}
-                    >
-                        <span className="bg-white/90 backdrop-blur-sm px-4 py-2 rounded-full text-primary-blue font-sans text-xs tracking-[0.2em] uppercase font-bold mb-8 inline-block shadow-sm">
-                            The Origin
-                        </span>
-                        <h1 className="font-serif text-5xl md:text-8xl lg:text-9xl font-light tracking-tight leading-none mb-8 text-white drop-shadow-lg">
-                            THE <span className="font-semibold">STORY</span>
-                        </h1>
-                    </motion.div>
-                </div>
-            </section>
+      {/* ── SECTION 1: Who We Are ─────────────────────────────────────────── */}
+      <section className="max-w-6xl mx-auto px-5 md:px-10 py-14 md:py-20">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-start">
 
-            <div className="container mx-auto px-4 md:px-6 -mt-16 md:-mt-32 relative z-20">
-                {/* Caron's Story - Editorial Paper Layout */}
-                <div className="bg-white rounded-t-3xl shadow-xl p-8 md:p-16 lg:p-24 grid lg:grid-cols-2 gap-16 lg:gap-24 items-center mb-20">
-                    <div className="space-y-10 order-2 lg:order-1">
-                        <h2 className="text-4xl md:text-5xl font-serif font-light leading-tight text-primary-blue">
-                            "They called me <br />
-                            <span className="text-accent-blue font-serif italic font-medium">The Mad Foreigner.</span>"
-                        </h2>
-
-                        <div className="space-y-6 text-lg text-primary-blue-light font-normal leading-relaxed">
-                            <p>
-                                When I first arrived in Jodhpur, I was struck by the sheer beauty of the Blue City. But as I explored deeper, I found something heartbreaking: ancient stepwells, once the lifeblood of the desert, choked with plastic, sludge, and decay.
-                            </p>
-                            <p>
-                                People told me, "It's not your job." They laughed when I jumped into the filthy water with bare hands. But I couldn't walk away. The stones were speaking to me.
-                            </p>
-                            <p className="text-primary-blue font-medium">
-                                What started as a solo mission has now grown into the <strong>Stepwells Renovater</strong> movement. We are not just cleaning stones; we are restoring pride.
-                            </p>
-                        </div>
-
-                        <div className="pt-6 border-t border-surface-blue-dark flex items-center gap-4">
-                            <div className="w-12 h-12 rounded-full overflow-hidden bg-surface-blue-dark">
-                                <img src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=2673&auto=format&fit=crop" className="w-full h-full object-cover" />
-                            </div>
-                            <div>
-                                <p className="font-serif italic text-primary-blue font-medium text-lg leading-none">
-                                    Caron Rawnsley
-                                </p>
-                                <p className="text-xs text-primary-blue-light/60 uppercase tracking-widest mt-1">Founder</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="relative order-1 lg:order-2 h-full min-h-[500px]">
-                        <div className="absolute inset-0 top-10 left-10 border-[1px] border-surface-blue-dark rounded-lg z-0" />
-                        <div className="relative z-10 w-full h-full rounded-2xl overflow-hidden shadow-2xl">
-                            <img
-                                src="https://images.unsplash.com/photo-1590664095641-7fa0542df2e2?q=80&w=2787&auto=format&fit=crop"
-                                alt="Restoration work"
-                                className="w-full h-full object-cover"
-                            />
-                        </div>
-                    </div>
-                </div>
-
-                {/* Values - Clean Grid */}
-                <div className="mb-32 max-w-6xl mx-auto">
-                    <div className="text-center mb-16">
-                        <h2 className="text-3xl md:text-5xl font-serif font-light mb-4 text-primary-blue">Our Code</h2>
-                        <p className="text-primary-blue-light/60">The principles that guide every stone we lift.</p>
-                    </div>
-
-                    <div className="grid md:grid-cols-3 gap-8">
-                        {[
-                            {
-                                num: "01",
-                                title: "Preservation",
-                                desc: "Protecting the architectural legacy of our ancestors for future generations."
-                            },
-                            {
-                                num: "02",
-                                title: "Community",
-                                desc: "Empowering locals to take ownership of their neighborhood heritage."
-                            },
-                            {
-                                num: "03",
-                                title: "Water Security",
-                                desc: "Reviving traditional water harvesting systems to fight scarcity."
-                            }
-                        ].map((item, i) => (
-                            <div key={i} className="group p-10 bg-white shadow-sm border border-surface-blue-dark hover:shadow-xl hover:border-accent-blue/20 rounded-2xl transition-all duration-300">
-                                <span className="inline-block px-3 py-1 bg-surface-blue text-primary-blue-light/60 font-mono text-xs rounded-full mb-6 group-hover:bg-accent-blue/10 group-hover:text-accent-blue transition-colors">
-                                    {item.num}
-                                </span>
-                                <h3 className="font-serif text-2xl font-medium mb-4 text-primary-blue group-hover:text-accent-blue transition-colors">
-                                    {item.title}
-                                </h3>
-                                <p className="text-primary-blue-light/60 leading-relaxed group-hover:text-primary-blue-light">
-                                    {item.desc}
-                                </p>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-
-                {/* Team - The Guardians */}
-                <div className="pb-32">
-                    <div className="flex flex-col md:flex-row justify-between items-end mb-12 gap-6 border-b border-surface-blue-dark pb-8">
-                        <div>
-                            <span className="text-accent-blue font-sans text-xs tracking-[0.2em] uppercase font-bold mb-2 block">
-                                The Team
-                            </span>
-                            <h2 className="text-4xl md:text-6xl font-serif font-light text-primary-blue">The Guardians</h2>
-                        </div>
-                        <p className="text-primary-blue-light/60 max-w-md text-right md:text-left">
-                            And over 5,000+ volunteers who have dirtied their hands to clean our history.
-                        </p>
-                    </div>
-
-                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
-                        {[
-                            "https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=2864&auto=format&fit=crop",
-                            "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?q=80&w=2187&auto=format&fit=crop",
-                            "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=3000&auto=format&fit=crop",
-                            "https://images.unsplash.com/photo-1531123897727-8f129e1688ce?q=80&w=2681&auto=format&fit=crop"
-                        ].map((src, i) => (
-                            <div key={i} className="group relative">
-                                <div className="aspect-[3/4] overflow-hidden rounded-xl bg-surface-blue mb-4">
-                                    <img
-                                        src={src}
-                                        alt="Volunteer"
-                                        className="w-full h-full object-cover grayscale transition-all duration-700 group-hover:grayscale-0 group-hover:scale-105"
-                                    />
-                                </div>
-                                <h3 className="font-serif text-lg text-primary-blue font-medium group-hover:text-accent-blue transition-colors">Volunteer Name</h3>
-                                <p className="text-xs text-primary-blue-light/50 uppercase tracking-widest mt-1">Restoration Lead</p>
-                            </div>
-                        ))}
-                    </div>
-                </div>
+          {/* Left: text */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+          >
+            {/* Section label */}
+            <div className="flex items-center gap-2 mb-3">
+              <Landmark size={18} className="text-[#D7C2A3]" />
+              <span className="text-[#B88445] font-bold text-sm tracking-widest uppercase">Who We Are</span>
             </div>
+
+            <h1 className="text-3xl md:text-4xl font-bold text-[#0D3B66] leading-snug mb-8">
+              We Are Stepwells Renovater
+            </h1>
+
+            <div className="space-y-6">
+              {WHO_WE_ARE.map(({ title, body }) => (
+                <div key={title} className="flex items-start gap-3">
+                  <CheckCircle size={18} className="text-[#0EA5E9] shrink-0 mt-0.5" />
+                  <div>
+                    <h3 className="text-base font-bold text-[#B88445] mb-1">{title}</h3>
+                    <p className="text-[#4A6080] text-sm leading-relaxed">{body}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="flex flex-wrap gap-3 mt-10">
+              <Link
+                href="/get-involved"
+                className="inline-flex items-center gap-2 bg-[#0D3B66] text-white text-sm font-semibold px-6 py-3 rounded-full hover:bg-[#0EA5E9] transition-colors"
+              >
+                Join the Movement <ArrowRight size={15} />
+              </Link>
+              <Link
+                href="/team"
+                className="inline-flex items-center gap-2 border border-[#D7C2A3] text-[#0D3B66] text-sm font-semibold px-6 py-3 rounded-full hover:bg-[#D7C2A3]/15 transition-colors"
+              >
+                Meet Our Team <ArrowRight size={15} />
+              </Link>
+            </div>
+          </motion.div>
+
+          {/* Right: two stacked images */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.97 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.7, delay: 0.1 }}
+            className="flex flex-col gap-4"
+          >
+            <div className="relative w-full h-64 rounded-2xl overflow-hidden shadow-lg">
+              <Image src="/toorji.jpg" alt="Toorji Ka Jhalra stepwell" fill className="object-cover" sizes="600px" />
+              <div className="absolute inset-0 bg-gradient-to-t from-[#0D3B66]/50 to-transparent" />
+              <div className="absolute bottom-4 left-4">
+                <p className="text-white text-sm font-semibold">Toorji Ka Jhalra</p>
+                <p className="text-white/60 text-xs">Jodhpur, Rajasthan</p>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="relative h-40 rounded-2xl overflow-hidden shadow-md">
+                <Image src="/mahamandirhero.jpeg" alt="Mahamandir restoration" fill className="object-cover" sizes="300px" />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#0D3B66]/50 to-transparent" />
+                <div className="absolute bottom-3 left-3">
+                  <p className="text-white text-xs font-semibold">Mahamandir Bawri</p>
+                </div>
+              </div>
+              <div className="relative h-40 rounded-2xl overflow-hidden shadow-md">
+                <Image src="/story.jpeg" alt="Volunteer restoration" fill className="object-cover" sizes="300px" />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#0D3B66]/50 to-transparent" />
+                <div className="absolute bottom-3 left-3">
+                  <p className="text-white text-xs font-semibold">Community Work</p>
+                </div>
+              </div>
+            </div>
+          </motion.div>
         </div>
-    );
+      </section>
+
+      {/* ── SECTION 2: Our Mission ────────────────────────────────────────── */}
+      <section className="bg-[#0D3B66] py-16 md:py-20">
+        <div className="max-w-6xl mx-auto px-5 md:px-10">
+
+          {/* Label */}
+          <div className="flex items-center gap-2 mb-4">
+            <Landmark size={18} className="text-[#D7C2A3]" />
+            <span className="text-[#D7C2A3] font-bold text-sm tracking-widest uppercase">Our Mission</span>
+          </div>
+
+          <h2 className="text-3xl md:text-4xl font-bold text-white leading-snug mb-4 max-w-2xl">
+            We Are Guided By Heritage, Community &amp; Purpose
+          </h2>
+          <p className="text-white/60 text-sm md:text-base leading-relaxed max-w-3xl mb-12">
+            Our mission is to preserve and revive India's traditional water heritage through community participation, environmental stewardship, and sustainable conservation. We reconnect people with their cultural roots by restoring the stepwells that once formed the heart of every community.
+          </p>
+
+          {/* Mission cards */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {MISSION_CARDS.slice(0, 4).map(({ title, icon: Icon, desc }, i) => (
+              <motion.div
+                key={title}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: i * 0.08 }}
+                className="bg-white/10 border border-white/10 rounded-2xl p-6 hover:bg-white/15 transition-colors"
+              >
+                <div className="w-14 h-14 rounded-full bg-[#D7C2A3] flex items-center justify-center mb-5 shadow-md">
+                  <Icon size={24} className="text-[#0D3B66]" strokeWidth={2} />
+                </div>
+                <h4 className="text-white font-bold text-sm mb-2">{title}</h4>
+                <p className="text-white/55 text-xs leading-relaxed">{desc}</p>
+              </motion.div>
+            ))}
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
+            {MISSION_CARDS.slice(4).map(({ title, icon: Icon, desc }, i) => (
+              <motion.div
+                key={title}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: i * 0.08 }}
+                className="bg-white/10 border border-white/10 rounded-2xl p-6 hover:bg-white/15 transition-colors"
+              >
+                <div className="w-14 h-14 rounded-full bg-[#D7C2A3] flex items-center justify-center mb-5 shadow-md">
+                  <Icon size={24} className="text-[#0D3B66]" strokeWidth={2} />
+                </div>
+                <h4 className="text-white font-bold text-sm mb-2">{title}</h4>
+                <p className="text-white/55 text-xs leading-relaxed">{desc}</p>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── SECTION 3: Our Vision ─────────────────────────────────────────── */}
+      <section className="max-w-6xl mx-auto px-5 md:px-10 py-16 md:py-20">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+
+          {/* Left: text */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+          >
+            <div className="flex items-center gap-2 mb-3">
+              <Landmark size={18} className="text-[#D7C2A3]" />
+              <span className="text-[#B88445] font-bold text-sm tracking-widest uppercase">Our Vision</span>
+            </div>
+            <h2 className="text-3xl md:text-4xl font-bold text-[#0D3B66] leading-snug mb-6">
+              To Give Every Stepwell A Future As Great As Its Past
+            </h2>
+            <p className="text-[#4A6080] text-sm md:text-base leading-relaxed mb-4">
+              Our vision is a Rajasthan where every ancient stepwell is restored, celebrated, and maintained as a living cultural landmark — not just a relic of the past but a source of community pride and sustainable water wisdom.
+            </p>
+            <p className="text-[#4A6080] text-sm leading-relaxed">
+              We strive to be a comprehensive resource, providing education on heritage conservation, connecting compassionate individuals with restoration efforts, and working with local governments to protect these irreplaceable structures for generations to come.
+            </p>
+
+            <Link
+              href="/get-involved"
+              className="inline-flex items-center gap-2 bg-[#0D3B66] text-white text-sm font-semibold px-6 py-3 rounded-full hover:bg-[#0EA5E9] transition-colors mt-8"
+            >
+              Join the Movement <ArrowRight size={15} />
+            </Link>
+          </motion.div>
+
+          {/* Right: hero image */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.97 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.7, delay: 0.1 }}
+            className="relative h-80 md:h-96 rounded-3xl overflow-hidden shadow-xl"
+          >
+            <Image src="/hero1.png" alt="Stepwell heritage" fill className="object-cover" sizes="600px" />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#0D3B66]/60 to-transparent" />
+            <div className="absolute bottom-6 left-6 right-6">
+              <p className="text-white font-bold text-base">"Preserving water. Preserving culture. Preserving identity."</p>
+              <p className="text-white/55 text-xs mt-1">— Stepwells Renovater Foundation</p>
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
+    </div>
+  );
 }

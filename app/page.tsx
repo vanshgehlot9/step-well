@@ -3,164 +3,102 @@
 import { useRef, useEffect, useCallback, useState } from "react";
 import Hero from "@/components/hero";
 import Link from "next/link";
+import Script from "next/script";
+import { Tweet } from 'react-tweet';
 import { Button } from "@/components/ui/button";
-import MediaArchive from "@/components/media-archive";
-import { ArrowRight, Droplets, Users, MapPin, CalendarDays } from "lucide-react";
-import { motion, useInView } from "framer-motion";
 
-// Animated Counter Hook
-function useCounter(end: number, duration: number = 2000, startWhen: boolean = true) {
-  const [count, setCount] = useState(0);
-  useEffect(() => {
-    if (!startWhen) return;
-    let startTime: number | null = null;
-    let raf: number;
-    const step = (timestamp: number) => {
-      if (!startTime) startTime = timestamp;
-      const progress = Math.min((timestamp - startTime) / duration, 1);
-      const eased = 1 - Math.pow(1 - progress, 3); // easeOutCubic
-      setCount(Math.floor(eased * end));
-      if (progress < 1) raf = requestAnimationFrame(step);
-    };
-    raf = requestAnimationFrame(step);
-    return () => cancelAnimationFrame(raf);
-  }, [end, duration, startWhen]);
-  return count;
-}
+import { ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { getStores } from "@/lib/firebase-services";
+import { Store } from "@/lib/types";
+import { StoreCard } from "@/components/store-card";
 
-// Stats Component
-const Stats = () => {
-  const stats = [
-    { label: "Stepwells Cleaned", value: 25, suffix: "+", icon: Droplets, color: "from-sky-400 to-blue-500" },
-    { label: "Volunteers Engaged", value: 150, suffix: "+", icon: Users, color: "from-emerald-400 to-teal-500" },
-    { label: "Cities Reached", value: 3, suffix: "", icon: MapPin, color: "from-amber-400 to-orange-500" },
-    { label: "Years Active", value: 8, suffix: "+", icon: CalendarDays, color: "from-violet-400 to-purple-500" },
-  ];
 
-  const sectionRef = useRef<HTMLDivElement>(null);
-  const isInView = useInView(sectionRef, { once: true, margin: "-50px" });
-
-  // Mobile stat card
-  const MobileStatCard = ({ stat, index }: { stat: typeof stats[number]; index: number }) => {
-    const count = useCounter(stat.value, 1800, isInView);
-    return (
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={isInView ? { opacity: 1, y: 0 } : {}}
-        transition={{ delay: index * 0.1, duration: 0.5, ease: "easeOut" }}
-        className="flex items-center gap-4 bg-white/[0.06] backdrop-blur-sm border border-white/[0.1] rounded-2xl p-4 active:bg-white/[0.1] transition-colors"
-      >
-        <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${stat.color} flex items-center justify-center shrink-0 shadow-lg`}>
-          <stat.icon size={22} className="text-white" />
-        </div>
-        <div>
-          <h3 className="text-3xl font-bold font-serif text-white leading-none">
-            {count}{stat.suffix}
-          </h3>
-          <p className="text-xs uppercase tracking-[0.15em] text-white/50 font-semibold mt-1">{stat.label}</p>
-        </div>
-      </motion.div>
-    );
-  };
-
-  // Desktop stat card
-  const DesktopStatCard = ({ stat, index }: { stat: typeof stats[number]; index: number }) => {
-    const count = useCounter(stat.value, 2000, isInView);
-    return (
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={isInView ? { opacity: 1, y: 0 } : {}}
-        transition={{ delay: index * 0.12, duration: 0.6 }}
-        className="group text-center space-y-3 p-8 rounded-2xl bg-white/5 backdrop-blur-sm border border-white/10 hover:bg-white/10 hover:border-white/20 transition-all duration-300"
-      >
-        <div className={`w-14 h-14 rounded-xl bg-gradient-to-br ${stat.color} flex items-center justify-center mx-auto shadow-lg group-hover:scale-110 transition-transform duration-300`}>
-          <stat.icon size={26} className="text-white" />
-        </div>
-        <h3 className="text-5xl font-bold font-serif">{count}{stat.suffix}</h3>
-        <p className="text-sm uppercase tracking-[0.2em] text-white/50 font-semibold">{stat.label}</p>
-      </motion.div>
-    );
-  };
-
-  return (
-    <section ref={sectionRef} className="bg-primary-blue py-10 md:py-16 text-white relative overflow-hidden">
-      {/* Background Texture Overlay */}
-      <div className="absolute inset-0 bg-stepwell-pattern opacity-5" />
-
-      {/* Desktop Grid — 4 columns */}
-      <div className="hidden md:grid container mx-auto px-4 grid-cols-4 gap-6 max-w-5xl text-center relative z-10">
-        {stats.map((stat, index) => (
-          <DesktopStatCard key={index} stat={stat} index={index} />
-        ))}
-      </div>
-
-      {/* Mobile — 2x2 Grid */}
-      <div className="md:hidden relative z-10 px-4">
-        <div className="grid grid-cols-2 gap-3">
-          {stats.map((stat, index) => (
-            <MobileStatCard key={index} stat={stat} index={index} />
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-};
-
-// Project Card Component (Inline for now)
-const ProjectCard = ({ title, image, description, slug }: { title: string; image: string; description: string; slug: string }) => (
-  <Link href={`/projects/${slug}`}>
-    <div className="group relative overflow-hidden rounded-xl shadow-lg aspect-[4/5] md:aspect-video cursor-pointer">
-      <img
-        src={image}
-        alt={title}
-        className="object-cover w-full h-full transition-transform duration-500 group-hover:scale-110"
-      />
-      <div className="absolute inset-0 bg-gradient-to-t from-primary-blue/90 via-primary-blue/40 to-transparent flex flex-col justify-end p-6">
-        <h3 className="text-2xl font-serif font-bold text-white mb-2">{title}</h3>
-        <p className="text-white/80 text-sm mb-4 line-clamp-2">{description}</p>
-        <div className="flex items-center text-accent-blue font-medium uppercase text-xs tracking-widest gap-2 group-hover:text-white transition-colors">
-          See in Details <ArrowRight size={14} />
-        </div>
-      </div>
-    </div>
-  </Link>
-);
-
+const featuredProjects = [
+  {
+    title: "Toorji Ka Jhalra:\nFrom Neglect to Revival",
+    description: "Once buried beneath years of debris and neglect, Toorji Ka Jhalra has become one of Jodhpur's most celebrated heritage spaces.\n\nThrough community participation and dedicated cleanliness efforts, the historic stepwell has re-emerged as a symbol of cultural pride and water heritage conservation.",
+    location: "Jodhpur, Rajasthan",
+    category: "Stepwell Restoration",
+    status: "Revived",
+    image: "/toorji.jpg",
+    slug: "toorji-ka-jhalra"
+  },
+  {
+    title: "Mahamandir Bawri:\nA Hidden Gem Restored",
+    description: "A hidden gem restored to its former glory. The water is now clean enough for aquatic life.\n\nThrough meticulous cleaning and structural reinforcement, the bawri now stands as a testament to what community-led conservation can achieve.",
+    location: "Jodhpur, Rajasthan",
+    category: "Stepwell Restoration",
+    status: "Active",
+    image: "/mahamandirhero.jpeg",
+    slug: "mahamandir-bawri"
+  },
+  {
+    title: "Trivedi Sukhdev Ji Ka Jhalra:\nReclaiming History",
+    description: "A historic stepwell reclaimed from neglect, its intricate stonework and sacred waters revived for the community.\n\nThe restoration process involved careful removal of silt and debris, bringing life back to this architectural marvel.",
+    location: "Jodhpur, Rajasthan",
+    category: "Heritage Conservation",
+    status: "Ongoing",
+    image: "/sukhdev.PNG",
+    slug: "trivedi-sukhdev-ji-ka-jhalra"
+  }
+];
 export default function Home() {
+  const [currentProjectIndex, setCurrentProjectIndex] = useState(0);
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
+  const [stores, setStores] = useState<Store[]>([]);
+
+  useEffect(() => {
+    async function fetchStores() {
+      try {
+        const data = await getStores();
+        setStores(data.filter(s => s.status === 'ACTIVE'));
+      } catch (err) {
+        console.error("Failed to load stores:", err);
+      }
+    }
+    fetchStores();
+  }, []);
+
+  const nextProject = useCallback(() => setCurrentProjectIndex((prev) => (prev + 1) % featuredProjects.length), []);
+  const prevProject = useCallback(() => setCurrentProjectIndex((prev) => (prev - 1 + featuredProjects.length) % featuredProjects.length), []);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      nextProject();
+    }, 8000);
+    return () => clearInterval(timer);
+  }, [nextProject]);
+
   return (
     <div className="flex flex-col min-h-screen bg-background">
+      {/* 1. HERO — First impression & hook */}
       <Hero />
 
-      <Stats />
-
-      {/* Mission Teaser */}
-      <section className="py-12 md:py-24 bg-surface-blue">
+      {/* 2. MISSION — Who we are & our story */}
+      <section id="mission" className="py-12 md:py-24 bg-surface-blue scroll-mt-32">
         <div className="container mx-auto px-4 md:px-6">
 
           {/* Mobile Layout */}
           <div className="md:hidden flex flex-col gap-6">
-            {/* Image with overlay heading */}
             <div className="relative w-full aspect-[4/3] rounded-2xl overflow-hidden shadow-xl">
-              <img
-                src="/story.jpeg"
-                alt="Stepwell cleanup activity"
-                className="object-cover w-full h-full"
-              />
+              <img src="/story.jpeg" alt="Stepwell cleanup activity" className="object-cover w-full h-full" />
               <div className="absolute inset-0 bg-gradient-to-t from-primary-blue/80 via-primary-blue/30 to-transparent" />
               <div className="absolute bottom-0 left-0 right-0 p-5">
                 <h2 className="text-3xl font-serif font-bold text-white leading-tight">
-                  More Than Just <span className="text-accent-blue-light">Cleaning Water</span>
+                  Saving A <span className="text-accent-blue-light">Disappearing Legacy</span>
                 </h2>
               </div>
             </div>
-
-            {/* Text content */}
             <div className="space-y-4 px-1">
               <p className="text-base text-primary-blue-light/80 leading-relaxed">
-                Stepwells (Bawaris/Jhalaras) are not just water bodies; they are architectural marvels and community hubs of Rajasthan. For decades, they have been neglected, turned into garbage dumps.
+                Stepwell Renovation Foundation is a non-profit organization dedicated to the preservation, cleanliness, and promotion of India's historic stepwells and traditional water heritage.
               </p>
               <p className="text-base text-primary-blue-light/80 leading-relaxed">
-                Led by <strong>Caron Rawnsley</strong>, we are a people&apos;s movement to reclaim these spaces. We clean, we restore, and we breathe life back into Jodhpur&apos;s heritage—one bucket of trash at a time.
+                Inspired by the extraordinary work of Caron Rawnsley, the Foundation works to reconnect communities with their cultural and environmental significance through awareness, public participation, and sustainable conservation practices.
+              </p>
+              <p className="text-base text-primary-blue-light/80 leading-relaxed">
+                Established by R.K. Padmaja Rathore, Ravindra Vishnoi, and Vijendra, who share a commitment to preserving traditional water systems and India's architectural heritage.
               </p>
               <Link href="/about">
                 <Button variant="outline" className="mt-2 w-full border-primary-blue text-primary-blue hover:bg-primary-blue hover:text-white rounded-full py-5">
@@ -174,239 +112,362 @@ export default function Home() {
           <div className="hidden md:grid md:grid-cols-2 gap-12 items-center">
             <div className="space-y-6">
               <h2 className="text-4xl md:text-5xl font-serif font-bold text-primary-blue">
-                More Than Just <br /><span className="text-accent-blue">Cleaning Water</span>
+                Saving A <br /><span className="text-accent-blue">Disappearing Legacy</span>
               </h2>
               <p className="text-lg text-primary-blue-light/80 leading-relaxed">
-                Stepwells (Bawaris/Jhalaras) are not just water bodies; they are architectural marvels and community hubs of Rajasthan. For decades, they have been neglected, turned into garbage dumps.
+                Stepwell Renovation Foundation is a non-profit organization dedicated to the preservation, cleanliness, and promotion of India's historic stepwells and traditional water heritage.
               </p>
               <p className="text-lg text-primary-blue-light/80 leading-relaxed">
-                Led by <strong>Caron Rawnsley</strong>, we are a people&apos;s movement to reclaim these spaces. We clean, we restore, and we breathe life back into Jodhpur&apos;s heritage—one bucket of trash at a time.
+                Inspired by the extraordinary work of Caron Rawnsley, whose decade-long efforts revived public awareness of Jodhpur's historic stepwells, the Foundation works to reconnect communities with their cultural and environmental significance.
+              </p>
+              <p className="text-lg text-primary-blue-light/80 leading-relaxed">
+                Established by R.K. Padmaja Rathore, Ravindra Vishnoi, and Vijendra, who share a commitment to preserving traditional water systems and India's architectural heritage.
               </p>
               <Link href="/about">
-                <Button variant="outline" className="mt-4 border-primary-blue text-primary-blue hover:bg-primary-blue hover:text-white">
+                <Button variant="outline" className="mt-4 border-primary-blue text-primary-blue hover:bg-primary-blue hover:text-white px-8 py-6 rounded-full font-serif text-lg">
                   Read Our Story
                 </Button>
               </Link>
             </div>
             <div className="relative h-[400px] rounded-2xl overflow-hidden shadow-2xl rotate-2 hover:rotate-0 transition-all duration-300">
-              <img
-                src="/story.jpeg"
-                alt="Stepwell cleanup activity"
-                className="object-cover w-full h-full"
-              />
+              <img src="/story.jpeg" alt="Stepwell cleanup activity" className="object-cover w-full h-full" />
               <div className="absolute inset-0 bg-primary-blue/10 mix-blend-multiply" />
             </div>
           </div>
         </div>
       </section>
 
-      {/* Featured Projects */}
-      <section className="py-12 md:py-24 bg-white">
-        <div className="container mx-auto px-4 md:px-6">
-          <div className="mb-6 md:mb-12">
-            <div className="space-y-1 md:space-y-2">
-              <h2 className="text-2xl md:text-5xl font-serif font-bold text-primary-blue">Featured Restorations</h2>
-              <p className="text-sm md:text-base text-primary-blue-light/60">Witness the change we&apos;ve made together.</p>
-            </div>
-          </div>
-
-          {/* Desktop Grid */}
-          <div className="hidden md:grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <ProjectCard
-              title="Toorji Ka Jhalra"
-              image="/toorji.jpg"
-              slug="toorji-ka-jhalra"
-              description="Once buried under trash, now Jodhpur's most vibrant urban space. A testament to what's possible."
-            />
-            <ProjectCard
-              title="Mahamandir Bawri"
-              image="/mahamandirhero.jpeg"
-              slug="mahamandir-bawri"
-              description="A hidden gem restored to its former glory. The water is now clean enough for aquatic life."
-            />
-            <ProjectCard
-              title="Trivedi Sukhdev Ji Ka Jhalra"
-              image="/sukhdev.PNG"
-              slug="trivedi-sukhdev-ji-ka-jhalra"
-              description="A historic stepwell reclaimed from neglect, its intricate stonework and sacred waters revived for the community."
-            />
-          </div>
-
-          {/* Mobile Horizontal Swipeable Carousel */}
-          <div className="md:hidden -mx-4">
-            <div className="flex gap-4 overflow-x-auto snap-x snap-mandatory px-4 pb-4 scrollbar-hide" style={{ WebkitOverflowScrolling: "touch" }}>
-              {[
-                { title: "Toorji Ka Jhalra", image: "/toorji.jpg", slug: "toorji-ka-jhalra", description: "Once buried under trash, now Jodhpur's most vibrant urban space." },
-                { title: "Mahamandir Bawri", image: "/mahamandirhero.jpeg", slug: "mahamandir-bawri", description: "A hidden gem restored to its former glory." },
-                { title: "Trivedi Sukhdev Ji Ka Jhalra", image: "/sukhdev.PNG", slug: "trivedi-sukhdev-ji-ka-jhalra", description: "A historic stepwell reclaimed from neglect." },
-              ].map((project, index) => (
-                <Link key={index} href={`/projects/${project.slug}`} className="flex-shrink-0 w-[85vw] snap-center">
-                  <div className="relative overflow-hidden rounded-2xl shadow-lg aspect-[3/4]">
-                    <img
-                      src={project.image}
-                      alt={project.title}
-                      className="object-cover w-full h-full"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-                    <div className="absolute bottom-0 left-0 right-0 p-5">
-                      <h3 className="text-xl font-serif font-bold text-white mb-1">{project.title}</h3>
-                      <p className="text-white/70 text-sm mb-3 line-clamp-2">{project.description}</p>
-                      <span className="inline-flex items-center gap-1.5 text-accent-blue text-xs font-bold uppercase tracking-widest">
-                        Explore <ArrowRight size={12} />
-                      </span>
-                    </div>
-                  </div>
-                </Link>
-              ))}
-            </div>
+      {/* 3. IMPACT STATS — Build instant credibility with numbers */}
+      <section className="bg-[#0D3B66] py-12 md:py-16">
+        <div className="container mx-auto px-4 md:px-8">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+            {[
+              { value: "10+", label: "Stepwells Restored", icon: "🏛️" },
+              { value: "5000+", label: "Volunteers Engaged", icon: "🤝" },
+              { value: "3", label: "Cities Impacted", icon: "📍" },
+              { value: "100%", label: "Community Led", icon: "💙" },
+            ].map((stat, i) => (
+              <motion.div
+                key={stat.label}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: i * 0.1 }}
+                className="flex flex-col items-center gap-2"
+              >
+                <span className="text-3xl mb-1">{stat.icon}</span>
+                <span className="font-serif text-4xl md:text-5xl font-bold text-white">{stat.value}</span>
+                <span className="text-white/60 text-sm md:text-base font-medium tracking-wide">{stat.label}</span>
+              </motion.div>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* Media Archive - Living Wall */}
-      <MediaArchive />
+      {/* 4. FEATURED PROJECTS — Proof of work */}
+      <section id="projects" className="py-10 md:py-16 bg-white scroll-mt-32 overflow-hidden relative">
+        <div className="max-w-[1440px] mx-auto px-6 md:px-12 lg:px-16 relative z-10">
+          <div className="text-center mb-10">
+            <span className="text-accent-blue font-semibold tracking-[0.2em] uppercase text-xs md:text-sm mb-3 block">Our Work</span>
+            <h2 className="font-serif text-3xl md:text-4xl font-bold text-primary-blue">Featured Restorations</h2>
+          </div>
+          <div className="w-full rounded-[20px] md:rounded-[28px] bg-white border border-surface-blue-dark overflow-hidden grid grid-cols-1 lg:grid-cols-2 shadow-[0_20px_60px_rgba(13,59,102,0.08)] relative">
+            
+            {/* Left Side: Story Details */}
+            <div className="relative z-10 border-b lg:border-b-0 lg:border-r border-surface-blue-dark h-[480px] lg:h-[540px]">
+              
+              <AnimatePresence>
+                <motion.div
+                  key={currentProjectIndex}
+                  initial={{ opacity: 0, y: 15 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -15 }}
+                  transition={{ duration: 0.5, ease: "easeInOut" }}
+                  className="absolute inset-0 p-7 md:p-10 flex flex-col justify-center"
+                >
+                  <span className="text-accent-blue font-semibold tracking-[0.2em] uppercase text-xs md:text-sm mb-3 block">
+                    FEATURED RESTORATION
+                  </span>
 
-      {/* Foundation Store - Museum Retail Wing (Light Editorial Theme) */}
-      <section className="py-16 md:py-32 bg-surface-blue relative overflow-hidden">
-        <div className="container mx-auto px-4 md:px-6 relative z-10">
+                  <h3 className="font-serif text-[clamp(1.5rem,3vw,2.6rem)] text-primary-blue font-bold leading-[1.1] mb-4 whitespace-pre-line">
+                    {featuredProjects[currentProjectIndex].title}
+                  </h3>
+                  
+                  <div className="space-y-2 text-primary-blue-light/80 text-[0.9rem] md:text-[1rem] leading-[1.65] mb-6 whitespace-pre-line">
+                    {featuredProjects[currentProjectIndex].description}
+                  </div>
+                  
+                  {/* Metadata Grid */}
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-y-4 gap-x-4 border-y border-surface-blue-dark py-4 mb-6">
+                    <div>
+                      <div className="text-[10px] md:text-xs uppercase tracking-[0.15em] text-accent-blue mb-1 font-bold">Location</div>
+                      <div className="text-primary-blue font-medium text-sm">{featuredProjects[currentProjectIndex].location}</div>
+                    </div>
+                    <div>
+                      <div className="text-[10px] md:text-xs uppercase tracking-[0.15em] text-accent-blue mb-1 font-bold">Category</div>
+                      <div className="text-primary-blue font-medium text-sm">{featuredProjects[currentProjectIndex].category}</div>
+                    </div>
+                    <div>
+                      <div className="text-[10px] md:text-xs uppercase tracking-[0.15em] text-accent-blue mb-1 font-bold">Status</div>
+                      <div className="text-primary-blue font-medium text-sm">{featuredProjects[currentProjectIndex].status}</div>
+                    </div>
+                  </div>
 
-          {/* Museum Label */}
-          <div className="flex flex-col items-center mb-8 md:mb-16 space-y-3 md:space-y-4 text-center">
-            <span className="bg-white/80 backdrop-blur-sm px-4 py-2 rounded-full text-primary-blue font-sans text-xs tracking-[0.2em] uppercase font-bold shadow-sm border border-surface-blue-dark">
-              Foundation Store
+                  <div>
+                    <Link 
+                      href={`/projects/${featuredProjects[currentProjectIndex].slug}`}
+                      className="inline-flex items-center justify-center gap-2 rounded-full bg-primary-blue px-8 py-4 text-[1rem] font-medium text-white shadow-lg transition-all duration-300 hover:bg-primary-blue/90 hover:-translate-y-1"
+                    >
+                      Read Full Story <ArrowRight size={18} />
+                    </Link>
+                  </div>
+                </motion.div>
+              </AnimatePresence>
+            </div>
+
+            {/* Right Side: Large Premium Image */}
+            <div className="relative overflow-hidden h-[300px] lg:h-[540px] flex items-center justify-center group bg-surface-blue">
+              <AnimatePresence>
+                <motion.img
+                  key={currentProjectIndex}
+                  initial={{ opacity: 0, scale: 1.05 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.6, ease: "easeInOut" }}
+                  src={featuredProjects[currentProjectIndex].image}
+                  alt={featuredProjects[currentProjectIndex].title}
+                  className="absolute inset-0 w-full h-full object-cover transition-transform duration-[10s] ease-out group-hover:scale-110"
+                />
+              </AnimatePresence>
+              <div className="absolute inset-0 bg-gradient-to-t from-primary-blue/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+            </div>
+
+          </div>
+
+          {/* Carousel Navigation Pill (Dayos Style) */}
+          <div className="flex justify-center mt-10 relative z-20">
+            <div className="flex items-center gap-8 px-6 py-3 bg-white border border-surface-blue-dark/50 rounded-full shadow-[0_10px_40px_rgba(13,59,102,0.08)]">
+              <button 
+                onClick={prevProject}
+                className="text-primary-blue hover:text-accent-blue transition-colors flex items-center justify-center p-1"
+                aria-label="Previous Project"
+              >
+                <ChevronLeft size={24} />
+              </button>
+              
+              <div className="flex items-center gap-3">
+                {featuredProjects.map((_, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => setCurrentProjectIndex(idx)}
+                    className={`h-2 rounded-full transition-all duration-500 ${
+                      idx === currentProjectIndex ? "w-8 bg-primary-blue" : "w-2 bg-primary-blue/20 hover:bg-primary-blue/40"
+                    }`}
+                    aria-label={`Go to slide ${idx + 1}`}
+                  />
+                ))}
+              </div>
+
+              <button 
+                onClick={nextProject}
+                className="text-primary-blue hover:text-accent-blue transition-colors flex items-center justify-center p-1"
+                aria-label="Next Project"
+              >
+                <ChevronRight size={24} />
+              </button>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      {/* 5. FOUNDATION MARKETPLACE — Call to action: support us by shopping */}
+      <section id="marketplace" className="py-14 md:py-20 bg-[#f0f4f8] scroll-mt-24">
+        <div className="container mx-auto px-4 md:px-8">
+
+          {/* Section header */}
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8">
+            <div>
+              <span className="text-accent-blue font-semibold tracking-[0.2em] uppercase text-xs md:text-sm mb-2 block">
+                Local Artisans
+              </span>
+              <h2 className="font-serif text-3xl md:text-4xl font-bold text-primary-blue">
+                Foundation Marketplace
+              </h2>
+              <p className="text-primary-blue-light/70 mt-2 text-base max-w-lg">
+                Every purchase supports heritage conservation. Shop from verified local artisans and make a difference.
+              </p>
+            </div>
+            <Link
+              href="/foundation-store"
+              className="shrink-0 inline-flex items-center gap-2 bg-[#0f172a] text-white text-sm font-semibold px-5 py-2.5 rounded-full hover:bg-[#2563eb] transition-colors duration-300"
+            >
+              View All Stores <ArrowRight className="w-4 h-4" />
+            </Link>
+          </div>
+
+          {/* Store grid — show first 4 stores */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+            {stores.length > 0
+              ? stores.slice(0, 4).map((store, i) => (
+                  <StoreCard key={store.id} store={store} index={i} variant="home" />
+                ))
+              : (
+                <p className="col-span-full text-center text-primary-blue-light/50 py-12 text-sm">
+                  No active stores yet. Check back soon!
+                </p>
+              )
+            }
+          </div>
+
+        </div>
+      </section>
+
+      {/* 6. GLOBAL RECOGNITION — Social proof & media coverage */}
+      <section id="recognition" className="py-20 md:py-32 bg-gradient-to-b from-background to-[#f0f4f8] relative overflow-hidden">
+        <div className="absolute top-0 left-0 w-64 h-64 bg-primary-blue/5 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2 pointer-events-none" />
+        <div className="absolute bottom-0 right-0 w-96 h-96 bg-accent-blue/5 rounded-full blur-3xl translate-x-1/3 translate-y-1/3 pointer-events-none" />
+
+        <div className="container mx-auto px-4 md:px-8 relative z-10">
+          <div className="text-center max-w-2xl mx-auto mb-16">
+            <span className="text-accent-blue font-semibold tracking-[0.2em] uppercase text-xs md:text-sm mb-4 block">
+              Appreciation & Media
             </span>
-
-            <h2 className="text-[14vw] md:text-[8rem] leading-[0.8] font-serif font-light text-primary-blue tracking-tighter opacity-90 select-none drop-shadow-sm">
-              SHOP NOW
+            <h2 className="font-serif text-4xl md:text-5xl font-bold text-primary-blue mb-6">
+              Global Recognition
             </h2>
-
-            <p className="font-serif italic text-primary-blue-light/60 text-base md:text-xl tracking-wide max-w-md mx-auto mt-4 md:mt-6">
-              Every object restores history.
+            <div className="flex items-center justify-center gap-4">
+              <div className="h-px w-12 bg-accent-blue/30" />
+              <div className="w-2 h-2 rotate-45 bg-accent-blue/50" />
+              <div className="h-px w-12 bg-accent-blue/30" />
+            </div>
+            <p className="mt-6 text-primary-blue-light/80 text-lg leading-relaxed">
+              Discover how our community-led initiatives are making waves and inspiring change across the world.
             </p>
           </div>
 
-          {/* Desktop Grid */}
-          <div className="hidden md:grid w-full max-w-[1254px] mx-auto md:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
-            {[
-              {
-                name: "Heritage Tote",
-                desc: "Carry the legacy of 1740s stone carving.",
-                price: "₹1,200",
-                image: "https://images.unsplash.com/photo-1544816155-12df9643f363?q=80&w=2787&auto=format&fit=crop"
-              },
-              {
-                name: "Blue City Print",
-                desc: "A fragment of the sky, captured on archival paper.",
-                price: "₹3,500",
-                image: "https://images.unsplash.com/photo-1524230507669-5ff97982bb5e?q=80&w=2828&auto=format&fit=crop"
-              },
-              {
-                name: "Stonemason's Kit",
-                desc: "Tools of restoration, reimagined for modern hands.",
-                price: "₹5,800",
-                image: "https://images.unsplash.com/photo-1590664095641-7fa0542df2e2?q=80&w=2787&auto=format&fit=crop"
-              },
-              {
-                name: "Aquifer Bottle",
-                desc: "Pure vessel. Keeps water cool, keeps history alive.",
-                price: "₹950",
-                image: "https://images.unsplash.com/photo-1602143407151-a111ef24b07a?q=80&w=2787&auto=format&fit=crop"
-              }
-            ].map((item, index) => (
-              <Link key={index} href="/shop">
-                <div className="group relative h-[433px] rounded-[22px] bg-white border border-surface-blue-dark shadow-sm overflow-hidden transition-all duration-700 hover:-translate-y-1 hover:shadow-2xl hover:shadow-primary-blue/10">
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 lg:gap-12 max-w-[1400px] mx-auto items-start">
+            {/* News Item 1 */}
+            <div 
+              className="group relative rounded-2xl md:rounded-[2rem] p-3 md:p-4 bg-white shadow-[0_8px_30px_rgba(13,59,102,0.06)] hover:shadow-[0_20px_40px_rgba(13,59,102,0.12)] transition-all duration-500 border border-surface-blue-dark/50 cursor-zoom-in"
+              onClick={() => setPreviewImage("/media/news1.jpeg")}
+            >
+              <div className="relative overflow-hidden rounded-xl md:rounded-[1.5rem] bg-[#f8fafc] flex items-center justify-center aspect-[4/3]">
+                <img 
+                  src="/media/news1.jpeg" 
+                  alt="Press coverage detailing the community initiative" 
+                  className="w-full h-full object-contain transition-transform duration-700 ease-out group-hover:scale-105 p-2 md:p-4 mix-blend-darken" 
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-primary-blue/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+              </div>
+            </div>
 
-                  {/* Image Container */}
-                  <div className="h-2/3 w-full overflow-hidden p-4 relative">
-                    <div className="w-full h-full rounded-lg overflow-hidden relative">
-                      <img
-                        src={item.image}
-                        alt={item.name}
-                        className="w-full h-full object-cover opacity-90 group-hover:opacity-100 transition-all duration-700 group-hover:scale-105 saturate-[0.85] group-hover:saturate-100"
-                      />
-                      <div className="absolute inset-0 bg-primary-blue/10 mix-blend-multiply group-hover:opacity-0 transition-opacity duration-500" />
-                    </div>
-                  </div>
+            {/* News Item 2 */}
+            <div 
+              className="group relative rounded-2xl md:rounded-[2rem] p-3 md:p-4 bg-white shadow-[0_8px_30px_rgba(13,59,102,0.06)] hover:shadow-[0_20px_40px_rgba(13,59,102,0.12)] transition-all duration-500 border border-surface-blue-dark/50 cursor-zoom-in"
+              onClick={() => setPreviewImage("/media/news2.jpg")}
+            >
+              <div className="relative overflow-hidden rounded-xl md:rounded-[1.5rem] bg-[#f8fafc] flex items-center justify-center aspect-[4/3]">
+                <img 
+                  src="/media/news2.jpg" 
+                  alt="Newspaper clipping regarding the stepwell restoration" 
+                  className="w-full h-full object-contain transition-transform duration-700 ease-out group-hover:scale-105 p-2 md:p-4 mix-blend-darken" 
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-primary-blue/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+              </div>
+            </div>
 
-                  {/* Content Container */}
-                  <div className="absolute bottom-0 left-0 right-0 p-6 space-y-2 bg-white">
-                    <div className="flex justify-between items-end border-b border-surface-blue-dark pb-3 mb-2">
-                      <h3 className="text-primary-blue font-serif text-xl font-medium tracking-wide group-hover:text-accent-blue transition-colors">{item.name}</h3>
-                      <span className="text-primary-blue-light/60 font-sans text-sm font-medium">{item.price}</span>
-                    </div>
+            {/* News Item 3: Deputy CM */}
+            <div 
+              className="group relative rounded-2xl md:rounded-[2rem] p-3 md:p-4 bg-white shadow-[0_8px_30px_rgba(13,59,102,0.06)] hover:shadow-[0_20px_40px_rgba(13,59,102,0.12)] transition-all duration-500 border border-surface-blue-dark/50 cursor-zoom-in"
+              onClick={() => setPreviewImage("/media/deputycm.jpeg")}
+            >
+              <div className="relative overflow-hidden rounded-xl md:rounded-[1.5rem] bg-[#f8fafc] flex items-center justify-center aspect-[4/3]">
+                <img 
+                  src="/media/deputycm.jpeg" 
+                  alt="Meeting with Deputy CM of Rajasthan" 
+                  className="w-full h-full object-contain transition-transform duration-700 ease-out group-hover:scale-105 p-2 md:p-4 mix-blend-darken" 
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-primary-blue/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+              </div>
+            </div>
 
-                    <p className="text-primary-blue-light/50 font-sans text-sm line-clamp-2 leading-relaxed h-10">
-                      {item.desc}
-                    </p>
+            {/* News Item 4: Tweet */}
+            <div className="w-full flex justify-center bg-[#f8fafc] rounded-2xl md:rounded-[2rem] shadow-[0_8px_30px_rgba(13,59,102,0.06)] border border-surface-blue-dark/50 overflow-hidden">
+              <div className="w-full max-w-[500px] my-auto scale-90 sm:scale-100 origin-center" data-theme="light">
+                <Tweet id="2075545878652412085" />
+              </div>
+            </div>
 
-                    <div className="pt-2 flex items-center text-accent-blue text-xs font-bold tracking-[0.15em] uppercase opacity-80 group-hover:opacity-100 transition-opacity duration-300">
-                      View Object <span className="ml-2 transform group-hover:translate-x-1 transition-transform duration-300">→</span>
-                    </div>
-                  </div>
-                </div>
-              </Link>
-            ))}
-          </div>
-
-          {/* Mobile Horizontal Swipeable Products */}
-          <div className="md:hidden -mx-4">
-            <div className="flex gap-4 overflow-x-auto snap-x snap-mandatory px-4 pb-4 scrollbar-hide" style={{ WebkitOverflowScrolling: "touch" }}>
-              {[
-                {
-                  name: "Heritage Tote",
-                  desc: "Carry the legacy of 1740s stone carving.",
-                  price: "₹1,200",
-                  image: "https://images.unsplash.com/photo-1544816155-12df9643f363?q=80&w=2787&auto=format&fit=crop"
-                },
-                {
-                  name: "Blue City Print",
-                  desc: "A fragment of the sky, captured on archival paper.",
-                  price: "₹3,500",
-                  image: "https://images.unsplash.com/photo-1524230507669-5ff97982bb5e?q=80&w=2828&auto=format&fit=crop"
-                },
-                {
-                  name: "Stonemason's Kit",
-                  desc: "Tools of restoration, reimagined for modern hands.",
-                  price: "₹5,800",
-                  image: "https://images.unsplash.com/photo-1590664095641-7fa0542df2e2?q=80&w=2787&auto=format&fit=crop"
-                },
-                {
-                  name: "Aquifer Bottle",
-                  desc: "Pure vessel. Keeps water cool, keeps history alive.",
-                  price: "₹950",
-                  image: "https://images.unsplash.com/photo-1602143407151-a111ef24b07a?q=80&w=2787&auto=format&fit=crop"
-                }
-              ].map((item, index) => (
-                <Link key={index} href="/shop" className="flex-shrink-0 w-[72vw] snap-center">
-                  <div className="relative rounded-2xl bg-white border border-surface-blue-dark shadow-sm overflow-hidden">
-                    <div className="aspect-square w-full overflow-hidden p-3">
-                      <div className="w-full h-full rounded-xl overflow-hidden">
-                        <img
-                          src={item.image}
-                          alt={item.name}
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                    </div>
-                    <div className="p-4 pt-0 space-y-1">
-                      <div className="flex justify-between items-center">
-                        <h3 className="text-primary-blue font-serif text-lg font-medium">{item.name}</h3>
-                        <span className="text-primary-blue-light/60 font-sans text-sm font-medium">{item.price}</span>
-                      </div>
-                      <p className="text-primary-blue-light/50 font-sans text-xs line-clamp-2 leading-relaxed">
-                        {item.desc}
-                      </p>
-                      <div className="pt-1 flex items-center text-accent-blue text-xs font-bold tracking-[0.1em] uppercase">
-                        View Object →
-                      </div>
-                    </div>
-                  </div>
-                </Link>
-              ))}
+            {/* News Item 5: Instagram */}
+            <div className="w-full flex justify-center bg-[#f8fafc] rounded-2xl md:rounded-[2rem] py-6 md:p-4 shadow-[0_8px_30px_rgba(13,59,102,0.06)] border border-surface-blue-dark/50 overflow-hidden">
+              <iframe 
+                src="https://www.instagram.com/reel/DaNREiUBxqv/embed" 
+                frameBorder="0" 
+                scrolling="no" 
+                className="w-full max-w-[400px] h-[550px] border-none my-auto"
+              ></iframe>
             </div>
           </div>
         </div>
       </section>
+
+      {/* 7. SPONSORS & PARTNERS — Authority close */}
+      <section id="sponsors" className="py-14 md:py-20 bg-white scroll-mt-24 border-t border-gray-100">
+        <div className="container mx-auto px-4 md:px-8">
+          <div className="text-center mb-10 md:mb-16">
+            <span className="text-accent-blue font-semibold tracking-[0.2em] uppercase text-xs md:text-sm mb-2 block">
+              Supported By
+            </span>
+            <h2 className="font-serif text-3xl md:text-4xl font-bold text-primary-blue">
+              Our Sponsors & Partners
+            </h2>
+          </div>
+
+          <div className="flex flex-wrap items-center justify-center gap-8 md:gap-16 lg:gap-24 opacity-70 hover:opacity-100 transition-opacity duration-500">
+            <div className="w-32 md:w-48 h-20 relative grayscale hover:grayscale-0 transition-all duration-300 transform hover:scale-105">
+              <img src="/sponser/bagheera.png" alt="Bagheera" className="w-full h-full object-contain" />
+            </div>
+            <div className="w-32 md:w-48 h-20 relative grayscale hover:grayscale-0 transition-all duration-300 transform hover:scale-105">
+              <img src="/sponser/imaginarystudio.png" alt="Imaginary Studio" className="w-full h-full object-contain" />
+            </div>
+            <div className="w-32 md:w-48 h-20 relative grayscale hover:grayscale-0 transition-all duration-300 transform hover:scale-105">
+              <img src="/sponser/uptantra.png" alt="Uptantra" className="w-full h-full object-contain" />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Lightbox Modal */}
+      <AnimatePresence>
+        {previewImage && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setPreviewImage(null)}
+            className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-8 bg-black/80 backdrop-blur-md cursor-zoom-out"
+          >
+            <motion.img
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              transition={{ type: "spring", damping: 25, stiffness: 300 }}
+              src={previewImage}
+              alt="Preview"
+              className="max-w-full max-h-full object-contain rounded-xl sm:rounded-2xl shadow-2xl bg-white"
+              onClick={(e) => e.stopPropagation()}
+            />
+            <button
+              onClick={() => setPreviewImage(null)}
+              className="absolute top-4 right-4 sm:top-8 sm:right-8 w-12 h-12 flex items-center justify-center rounded-full bg-white/10 text-white/80 hover:bg-white/20 hover:text-white transition-all backdrop-blur-sm"
+              aria-label="Close preview"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

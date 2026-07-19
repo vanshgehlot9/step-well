@@ -5,6 +5,8 @@ import Navbar from "@/components/navbar";
 import Footer from "@/components/footer";
 import { CartProvider } from "@/context/cart-context";
 import { AuthProvider } from "@/context/auth-context";
+import FloatingCart from "@/components/floating-cart";
+import AnnouncementBar from "@/components/announcement-bar";
 
 const playfair = Playfair_Display({
   variable: "--font-playfair",
@@ -34,6 +36,11 @@ export const metadata: Metadata = {
       },
     ],
   },
+  icons: {
+    icon: [
+      { url: '/favicon.png', type: 'image/png' },
+    ]
+  },
 };
 
 export default function RootLayout({
@@ -48,6 +55,8 @@ export default function RootLayout({
           <CartProvider>
             <Navbar />
             <main className="flex-grow">{children}</main>
+            <FloatingCart />
+            <AnnouncementBar />
             <Footer />
           </CartProvider>
         </AuthProvider>
