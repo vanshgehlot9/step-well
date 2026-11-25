@@ -6,6 +6,9 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import { Upload, Heart, ShoppingBag, Search } from "lucide-react";
+import { usePublicCMS } from "@/lib/use-cms";
+import { FooterCMS, SiteSettingsCMS } from "@/lib/cms-types";
+import { DEFAULT_FOOTER_CMS, DEFAULT_SITE_SETTINGS_CMS } from "@/lib/cms-defaults";
 
 const navLinks = [
     { name: "Initiative", href: "/get-involved" },
@@ -19,8 +22,9 @@ export default function Navbar() {
     const [isOpen, setIsOpen] = useState(false);
     const pathname = usePathname();
     const [scrolled, setScrolled] = useState(false);
+    const { data: settings } = usePublicCMS<SiteSettingsCMS>("siteSettings");
+    const { data: footer } = usePublicCMS<FooterCMS>("footer");
 
-    // Close mobile menu on route change
     useEffect(() => {
         setIsOpen(false);
     }, [pathname]);
@@ -37,6 +41,11 @@ export default function Navbar() {
         return null;
     }
 
+    const brandPrimary = footer?.foundationBrandPrimary || DEFAULT_FOOTER_CMS.foundationBrandPrimary;
+    const brandAccent = footer?.foundationBrandAccent || DEFAULT_FOOTER_CMS.foundationBrandAccent;
+    const logo = footer?.logo || DEFAULT_FOOTER_CMS.logo;
+    const tagline = settings?.navbarTagline || DEFAULT_SITE_SETTINGS_CMS.navbarTagline;
+
     return (
         <header className={cn(
             "fixed top-0 left-0 right-0 z-50 h-[80px] md:h-[90px] transition-all duration-500 bg-[#0D3B66]",
@@ -47,17 +56,17 @@ export default function Navbar() {
                 <Link href="/" className="flex items-center gap-3 z-50 shrink-0 group">
                     <div className="relative w-10 h-10 md:w-12 md:h-12 overflow-hidden rounded-full border border-white/20 shadow-sm transition-transform duration-500 group-hover:scale-105">
                         <img
-                            src="/logo.jpeg"
+                            src={logo}
                             alt="Stepwells Renovater Logo"
                             className="w-full h-full object-cover"
                         />
                     </div>
                     <div className="hidden sm:flex flex-col justify-center">
                         <div className="font-serif text-[1.1rem] md:text-[1.2rem] font-medium text-[#F8F6F1] tracking-wide leading-tight">
-                            Stepwells <span className="text-[#D7C2A3]">Renovater</span>
+                            {brandPrimary} <span className="text-[#D7C2A3]">{brandAccent}</span>
                         </div>
                         <div className="text-[9px] md:text-[10px] uppercase tracking-[0.25em] text-[#F8F6F1]/60 mt-0.5">
-                            Heritage Conservation
+                            {tagline}
                         </div>
                     </div>
                 </Link>
@@ -88,20 +97,16 @@ export default function Navbar() {
 
                 {/* Desktop Actions - Aligned Right */}
                 <div className="hidden md:flex items-center gap-5 shrink-0">
-                    {/* Search Icon */}
                     <button className="text-[#F8F6F1]/70 hover:text-[#F8F6F1] transition-colors duration-300">
                         <Search size={20} />
                     </button>
-                    {/* Wishlist Icon */}
                     <Link href="/wishlist" className="text-[#F8F6F1]/70 hover:text-[#F8F6F1] transition-colors duration-300">
                         <Heart size={20} />
                     </Link>
-                    {/* Cart Icon */}
                     <Link href="/cart" className="text-[#F8F6F1]/70 hover:text-[#F8F6F1] transition-colors duration-300">
                         <ShoppingBag size={20} />
                     </Link>
 
-                    {/* Upload Invoice Button */}
                     <Link
                         href="/upload-invoice"
                         className="inline-flex items-center justify-center gap-2 rounded-full border border-[#D7C2A3]/40 bg-white/10 px-5 py-2.5 text-sm font-medium text-[#F8F6F1] backdrop-blur-sm transition-all duration-300 hover:bg-[#D7C2A3] hover:text-[#0D3B66] hover:border-[#D7C2A3] ml-2"
@@ -113,7 +118,6 @@ export default function Navbar() {
 
                 {/* Mobile Menu Toggle */}
                 <div className="flex md:hidden items-center gap-4 z-50">
-                    {/* Mobile Cart/Search short links */}
                     <button className="text-[#F8F6F1]/80 hover:text-[#F8F6F1] transition-colors">
                         <Search size={20} />
                     </button>

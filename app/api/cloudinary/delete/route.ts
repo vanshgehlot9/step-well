@@ -1,51 +1,66 @@
-import { NextResponse } from 'next/server';
-import crypto from 'crypto';
+import { NextResponse } from "next/server";
+import { v2 as cloudinary } from "cloudinary";
+
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME || process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY || process.env.NEXT_PUBLIC_CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
+
+function extractPublicIdFromUrl(url: string): { publicId: string; resourceType: "image" | "video" } {
+  const isVideo = url.includes("/video/upload/");
+  const parts = url.split("/");
+  const fileWithExtension = parts.pop() || "";
+  const uploadIdx = parts.indexOf("upload");
+  const afterUpload = uploadIdx >= 0 ? parts.slice(uploadIdx + 1) : [];
+  // Drop version segment like v1784454766 if present
+  const folderSegments =
+    afterUpload.length > 0 && /^v\d+$/.test(afterUpload[0])
+      ? afterUpload.slice(1)
+      : afterUpload;
+  const filename = fileWithExtension.replace(/\.[^.]+$/, "");
+  const publicId = folderSegments.length > 0 ? `${folderSegments.join("/")}/${filename}` : filename;
+  return { publicId, resourceType: isVideo ? "video" : "image" };
+}
 
 export async function POST(req: Request) {
   try {
-    const { url } = await req.json();
+    const body = await req.json();
+    const { url, publicId: explicitPublicId, resourceType: explicitResourceType } = body as {
+      url?: string;
+      publicId?: string;
+      resourceType?: "image" | "video";
+    };
 
-    if (!url) {
-      return NextResponse.json({ error: 'URL is required' }, { status: 400 });
+    if (!url && !explicitPublicId) {
+      return NextResponse.json({ error: "URL or publicId is required" }, { status: 400 });
     }
 
-    const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
-    const apiKey = process.env.NEXT_PUBLIC_CLOUDINARY_API_KEY;
+    const cloudName =
+      process.env.CLOUDINARY_CLOUD_NAME || process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
+    const apiKey =
+      process.env.CLOUDINARY_API_KEY || process.env.NEXT_PUBLIC_CLOUDINARY_API_KEY;
     const apiSecret = process.env.CLOUDINARY_API_SECRET;
 
     if (!cloudName || !apiKey || !apiSecret) {
-      return NextResponse.json({ error: 'Cloudinary credentials missing' }, { status: 500 });
+      return NextResponse.json({ error: "Cloudinary credentials missing" }, { status: 500 });
     }
 
-    // Extract public_id from Cloudinary URL
-    // Typical URL: https://res.cloudinary.com/cloud_name/image/upload/v1234567890/folder/image_name.jpg
-    const parts = url.split('/');
-    const fileWithExtension = parts.pop() || '';
-    const folderPath = parts.slice(parts.indexOf('upload') + 2).join('/');
-    const filename = fileWithExtension.split('.')[0];
-    
-    const publicId = folderPath ? `${folderPath}/${filename}` : filename;
+    const extracted = url ? extractPublicIdFromUrl(url) : null;
+    const targetPublicId = explicitPublicId || extracted?.publicId || "";
+    const targetResourceType = explicitResourceType || extracted?.resourceType || "image";
 
-    const timestamp = Math.round(new Date().getTime() / 1000).toString();
-    const signatureString = `public_id=${publicId}&timestamp=${timestamp}${apiSecret}`;
-    const signature = crypto.createHash('sha1').update(signatureString).digest('hex');
+    if (!targetPublicId) {
+      return NextResponse.json({ error: "Could not determine Cloudinary publicId" }, { status: 400 });
+    }
 
-    const formData = new FormData();
-    formData.append('public_id', publicId);
-    formData.append('api_key', apiKey);
-    formData.append('timestamp', timestamp);
-    formData.append('signature', signature);
-
-    const response = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/destroy`, {
-      method: 'POST',
-      body: formData,
+    const result = await cloudinary.uploader.destroy(targetPublicId, {
+      resource_type: targetResourceType,
     });
-
-    const result = await response.json();
 
     return NextResponse.json(result);
   } catch (error) {
     console.error("Error deleting from Cloudinary:", error);
-    return NextResponse.json({ error: 'Failed to delete image' }, { status: 500 });
+    return NextResponse.json({ error: "Failed to delete media from Cloudinary" }, { status: 500 });
   }
 }

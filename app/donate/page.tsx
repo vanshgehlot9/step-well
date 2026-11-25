@@ -6,8 +6,10 @@ import { CheckCircle2, Heart, ArrowRight } from "lucide-react";
 import { useState, useEffect } from "react";
 import { addDonation, getDonations } from "@/lib/firebase-services";
 import { Donation } from "@/lib/types";
+import { usePublicCMS } from "@/lib/use-cms";
+import { InvolvementContentCMS } from "@/lib/cms-types";
+import { DEFAULT_INVOLVEMENT_CMS } from "@/lib/cms-defaults";
 
-// ── Preset amounts ────────────────────────────────────────────────────────────
 const PRESETS = [
   { value: 50,    label: "₹50"    },
   { value: 100,   label: "₹100"   },
@@ -17,11 +19,8 @@ const PRESETS = [
   { value: 5000,  label: "₹5,000" },
 ];
 
-// ── Recent donors (Will be fetched from Firestore) ──────────────────────────
-
 const AVATAR_COLORS = ["#0D3B66", "#1A5493", "#0369A1", "#0284C7", "#0EA5E9"];
 
-// ── Donation box illustration (SVG, navy/gold palette) ────────────────────────
 function DonationIllustration() {
   return (
     <svg
@@ -31,7 +30,6 @@ function DonationIllustration() {
       className="w-full h-full"
       aria-hidden="true"
     >
-      {/* ── Floating hearts ── */}
       <motion.g
         animate={{ y: [0, -6, 0] }}
         transition={{ duration: 2.4, repeat: Infinity, ease: "easeInOut" }}
@@ -51,49 +49,25 @@ function DonationIllustration() {
         <text x="48" y="200" fontSize="10" fill="#D7C2A3" opacity="0.45">♥</text>
       </motion.g>
 
-      {/* ── Donation box body ── */}
-      {/* Box base */}
       <rect x="52" y="155" width="116" height="80" rx="10" fill="#D7C2A3" opacity="0.9" />
-      {/* Box lid */}
       <rect x="44" y="144" width="132" height="18" rx="6" fill="#B88445" />
-      {/* Slot on lid */}
       <rect x="98" y="148" width="24" height="5" rx="2.5" fill="#0D3B66" opacity="0.5" />
-      {/* DONATE text on box */}
-      <text
-        x="110"
-        y="202"
-        fontSize="11"
-        fontWeight="700"
-        fill="#0D3B66"
-        textAnchor="middle"
-        opacity="0.75"
-        fontFamily="serif"
-      >
+      <text x="110" y="202" fontSize="11" fontWeight="700" fill="#0D3B66" textAnchor="middle" opacity="0.75" fontFamily="serif">
         DONATE
       </text>
-      {/* Rupee coin icon on box */}
       <circle cx="110" cy="225" r="12" fill="#B88445" opacity="0.35" />
       <text x="110" y="229" fontSize="10" fontWeight="700" fill="#0D3B66" textAnchor="middle" opacity="0.6">₹</text>
 
-      {/* ── Left arm holding box ── */}
-      {/* Sleeve */}
       <rect x="30" y="220" width="65" height="36" rx="10" fill="#1A5493" opacity="0.8" />
-      {/* Hand */}
       <ellipse cx="75" cy="218" rx="28" ry="14" fill="#E8C9A0" />
-      {/* Fingers suggestion */}
       <ellipse cx="58" cy="214" rx="8" ry="5" fill="#E0BC90" />
       <ellipse cx="72" cy="210" rx="9" ry="5" fill="#E0BC90" />
       <ellipse cx="87" cy="212" rx="8" ry="5" fill="#E0BC90" />
       <ellipse cx="98" cy="217" rx="6" ry="4" fill="#E0BC90" />
 
-      {/* ── Right hand dropping coin ── */}
-      {/* Sleeve */}
       <rect x="125" y="80" width="50" height="40" rx="10" fill="#1A5493" opacity="0.8" />
-      {/* Hand */}
       <ellipse cx="148" cy="118" rx="16" ry="10" fill="#E8C9A0" />
-      {/* Thumb */}
       <ellipse cx="136" cy="114" rx="7" ry="4" fill="#E0BC90" />
-      {/* Coin being dropped */}
       <motion.g
         animate={{ y: [0, 22, 0] }}
         transition={{ duration: 1.6, repeat: Infinity, ease: "easeIn", repeatDelay: 0.8 }}
@@ -102,35 +76,35 @@ function DonationIllustration() {
         <text x="148" y="134" fontSize="9" fontWeight="700" fill="#0D3B66" textAnchor="middle">₹</text>
       </motion.g>
 
-      {/* ── Decorative swirl lines ── */}
       <path d="M30 120 Q20 100 35 85 Q50 70 40 55" stroke="#D7C2A3" strokeWidth="1.5" strokeOpacity="0.3" fill="none" strokeDasharray="4 3" />
       <path d="M185 140 Q200 120 188 105 Q176 90 185 75" stroke="#D7C2A3" strokeWidth="1.5" strokeOpacity="0.3" fill="none" strokeDasharray="4 3" />
     </svg>
   );
 }
 
-// ── Page ─────────────────────────────────────────────────────────────────────
 export default function DonatePage() {
   const { user } = useAuth();
+  const { data: cmsData } = usePublicCMS<InvolvementContentCMS>("involvementContent");
+  const cms = cmsData || DEFAULT_INVOLVEMENT_CMS;
 
-  const [amountInput, setAmountInput]       = useState<string>("1000");
+  const [amountInput, setAmountInput] = useState<string>("1000");
   const [selectedPreset, setSelectedPreset] = useState<number | null>(1000);
-  const [frequency, setFrequency]           = useState<"once" | "monthly">("once");
-  const [donorName, setDonorName]           = useState(user?.displayName ?? "");
-  const [email, setEmail]                   = useState("");
-  const [phone, setPhone]                   = useState("");
-  const [agreed, setAgreed]                 = useState(false);
-  const [processing, setProcessing]         = useState(false);
-  const [success, setSuccess]               = useState(false);
-
+  const [frequency, setFrequency] = useState<"once" | "monthly">("once");
+  const [donorName, setDonorName] = useState(user?.displayName ?? "");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [agreed, setAgreed] = useState(false);
+  const [processing, setProcessing] = useState(false);
+  const [success, setSuccess] = useState(false);
   const [recentDonations, setRecentDonations] = useState<Donation[]>([]);
 
   useEffect(() => {
     async function fetchRecentDonations() {
       try {
         const donations = await getDonations();
-        // Sort by createdAt descending and take top 5
-        const sorted = donations.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).slice(0, 5);
+        const sorted = donations
+          .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+          .slice(0, 5);
         setRecentDonations(sorted);
       } catch (error) {
         console.error("Error fetching recent donations:", error);
@@ -154,26 +128,27 @@ export default function DonatePage() {
     const num = Number(amountInput);
     if (!num || num < 50) { alert("Minimum donation amount is ₹50."); return; }
     if (!donorName || !email) { alert("Please provide your name and email."); return; }
-    if (!agreed)           { alert("Please agree to the terms to continue."); return; }
-    
+    if (!agreed) { alert("Please agree to the terms to continue."); return; }
+
     setProcessing(true);
     try {
       await addDonation(
-        { 
-          amount: num, 
-          paymentStatus: "COMPLETED", 
+        {
+          amount: num,
+          paymentStatus: "COMPLETED",
           transactionId: `TXN-${Math.random().toString(36).substring(2, 10).toUpperCase()}`,
           paymentMethod: "Razorpay",
           notes: frequency === "monthly" ? "Monthly Donation" : "One-time Donation",
           donorId: "",
-          createdAt: new Date().toISOString()
+          createdAt: new Date().toISOString(),
         },
         { name: donorName, email, phone }
       );
       setSuccess(true);
-      // Re-fetch recent donations to show the new one
       const donations = await getDonations();
-      const sorted = donations.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).slice(0, 5);
+      const sorted = donations
+        .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+        .slice(0, 5);
       setRecentDonations(sorted);
     } catch (error) {
       console.error("Donation failed:", error);
@@ -183,7 +158,6 @@ export default function DonatePage() {
     }
   }
 
-  // ── Thank-you ─────────────────────────────────────────────────────────────
   if (success) {
     return (
       <div className="min-h-screen bg-[#F0F9FF] flex items-center justify-center px-5 pt-[80px] md:pt-[90px]">
@@ -203,7 +177,7 @@ export default function DonatePage() {
               ₹{Number(amountInput).toLocaleString("en-IN")}
               {frequency === "monthly" ? " / month" : ""}
             </span>{" "}
-            goes directly toward restoring Rajasthan's ancient stepwells.
+            goes directly toward restoring Rajasthan&apos;s ancient stepwells.
           </p>
           <p className="text-[#1E293B]/40 text-sm mb-10">
             An 80G tax receipt has been sent to your email.
@@ -219,44 +193,51 @@ export default function DonatePage() {
     );
   }
 
-  // ── Main layout ───────────────────────────────────────────────────────────
   return (
     <div className="min-h-screen bg-[#F0F9FF] pt-[80px] md:pt-[90px]">
       <div className="max-w-6xl mx-auto px-4 md:px-8 py-10 md:py-14">
         <div className="grid grid-cols-1 lg:grid-cols-[240px_1fr_300px] gap-8 items-start">
-
-          {/* ── Col 1: Illustration panel ─────────────────────────────── */}
+          {/* Col 1: Illustration / supporting photo panel */}
           <div className="bg-white border border-[#E0F2FE] rounded-3xl p-6 flex flex-col items-center text-center lg:min-h-[620px] justify-between">
             <div>
               <h2 className="text-2xl font-bold text-[#0D3B66] leading-tight mb-1">
-                Make a<br />Donation
+                {cms.donationHeading}
               </h2>
-              <p className="text-[#1E293B]/40 text-xs mt-1">Support heritage restoration</p>
+              <p className="text-[#1E293B]/50 text-xs mt-1">{cms.donationSubheading}</p>
             </div>
 
-            {/* Illustrated donation box */}
-            <div className="w-full flex-1 flex items-center justify-center py-4 max-h-[260px]">
-              <DonationIllustration />
-            </div>
+            {cms.donationImage ? (
+              <div className="w-full my-4 rounded-2xl overflow-hidden border border-[#E0F2FE] aspect-[4/3]">
+                <img src={cms.donationImage} alt={cms.donationHeading} className="w-full h-full object-cover" />
+              </div>
+            ) : (
+              <div className="w-full flex-1 flex items-center justify-center py-4 max-h-[260px]">
+                <DonationIllustration />
+              </div>
+            )}
 
-            <p className="text-[#0D3B66]/40 text-[10px] leading-relaxed">
-              Secure · 80G eligible · Razorpay
-            </p>
+            <div className="space-y-2">
+              {cms.donationDescription && (
+                <p className="text-[#1E293B]/60 text-[11px] leading-relaxed">
+                  {cms.donationDescription}
+                </p>
+              )}
+              <p className="text-[#0D3B66]/40 text-[10px] leading-relaxed">
+                {cms.donationSecurityNote}
+              </p>
+            </div>
           </div>
 
-          {/* ── Col 2: Donation form ──────────────────────────────────── */}
+          {/* Col 2: Donation form */}
           <motion.div
             initial={{ opacity: 0, y: 14 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.08 }}
             className="bg-white border border-[#E0F2FE] rounded-3xl overflow-hidden shadow-sm"
           >
-            {/* Gold accent stripe */}
             <div className="h-1 bg-gradient-to-r from-[#D7C2A3] via-[#B88445] to-[#D7C2A3]" />
 
             <div className="p-7 md:p-9">
-
-              {/* Frequency tabs */}
               <div className="flex bg-[#F0F9FF] border border-[#E0F2FE] rounded-full p-1 mb-6">
                 {(["once", "monthly"] as const).map((f) => (
                   <button
@@ -273,7 +254,6 @@ export default function DonatePage() {
                 ))}
               </div>
 
-              {/* Amount input */}
               <div className="mb-5">
                 <label className="block text-sm font-semibold text-[#0D3B66] mb-2">
                   Donation Amount
@@ -287,7 +267,6 @@ export default function DonatePage() {
                   className="w-full px-4 py-3 rounded-xl border border-[#E0F2FE] focus:border-[#0EA5E9] outline-none text-base text-[#0D3B66] bg-white placeholder:text-[#1E293B]/25 transition-colors"
                 />
 
-                {/* Preset pills */}
                 <div className="flex flex-wrap gap-2 mt-3">
                   {PRESETS.map(({ value, label }) => (
                     <button
@@ -305,7 +284,6 @@ export default function DonatePage() {
                 </div>
               </div>
 
-              {/* Personal Info */}
               <div className="mb-5">
                 <h3 className="text-sm font-semibold text-[#0D3B66] mb-3">Personal Info</h3>
 
@@ -344,12 +322,10 @@ export default function DonatePage() {
                 </div>
               </div>
 
-              {/* Notice */}
               <p className="text-xs text-[#0EA5E9] bg-[#F0F9FF] border border-[#E0F2FE] rounded-xl px-4 py-3 mb-4 leading-relaxed">
                 Please do not refresh or cancel this page until your payment is successfully completed. In case of any issue, you will receive the latest update via email.
               </p>
 
-              {/* Terms */}
               <label className="flex items-start gap-2.5 mb-6 cursor-pointer">
                 <input
                   type="checkbox"
@@ -362,7 +338,6 @@ export default function DonatePage() {
                 </span>
               </label>
 
-              {/* Donate CTA */}
               <button
                 id="donate-cta-button"
                 onClick={handleDonate}
@@ -377,19 +352,20 @@ export default function DonatePage() {
                 ) : (
                   <>
                     <Heart size={16} className="fill-current" />
-                    Donate{amountInput ? ` ₹${Number(amountInput).toLocaleString("en-IN")}` : ""}
+                    {cms.donationCtaLabel || "Donate"}
+                    {amountInput ? ` ₹${Number(amountInput).toLocaleString("en-IN")}` : ""}
                     {frequency === "monthly" ? " / month" : ""}
                   </>
                 )}
               </button>
 
               <p className="text-center text-[#1E293B]/30 text-[11px] mt-3">
-                SSL encrypted · Powered by Razorpay · 80G receipt via email
+                {cms.donationSecurityNote}
               </p>
             </div>
           </motion.div>
 
-          {/* ── Col 3: Recent Donors only ─────────────────────────────── */}
+          {/* Col 3: Recent Donors */}
           <div className="bg-white border border-[#E0F2FE] rounded-2xl p-5">
             <h3 className="text-base font-bold text-[#0D3B66] mb-4">Recent Donors</h3>
             <div className="space-y-3">
@@ -408,19 +384,18 @@ export default function DonatePage() {
                     className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold text-white shrink-0"
                     style={{ backgroundColor: AVATAR_COLORS[i % AVATAR_COLORS.length] }}
                   >
-                    {/* Placeholder initial since we don't fetch donor name directly in this view, 
-                        would ideally join collections or store name in donation */}
                     A
                   </div>
                   <div className="min-w-0">
                     <p className="text-sm font-semibold text-[#0D3B66] leading-tight truncate">Anonymous Donor</p>
-                    <p className="text-xs text-[#1E293B]/45 mt-0.5">Donated - ₹{donation.amount.toLocaleString("en-IN")}</p>
+                    <p className="text-xs text-[#1E293B]/45 mt-0.5">
+                      Donated - ₹{donation.amount.toLocaleString("en-IN")}
+                    </p>
                   </div>
                 </motion.div>
               ))}
             </div>
           </div>
-
         </div>
       </div>
     </div>

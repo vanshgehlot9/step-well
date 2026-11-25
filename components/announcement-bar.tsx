@@ -4,23 +4,28 @@ import { useState, useEffect } from "react";
 import { X, Phone, Hammer } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { usePathname } from "next/navigation";
+import { usePublicCMS } from "@/lib/use-cms";
+import { SiteSettingsCMS } from "@/lib/cms-types";
+import { DEFAULT_SITE_SETTINGS_CMS } from "@/lib/cms-defaults";
 
 export default function AnnouncementBar() {
   const [isVisible, setIsVisible] = useState(true);
-  const pathname = usePathname();
-
-  // Hide on admin/vendor routes to keep them clean
-  if (pathname?.startsWith("/admin") || pathname?.startsWith("/store-owner")) {
-    return null;
-  }
-
-  // Prevent hydration mismatch by only rendering after mount
   const [mounted, setMounted] = useState(false);
+  const pathname = usePathname();
+  const { data: settings, unpublished } = usePublicCMS<SiteSettingsCMS>("siteSettings");
+
   useEffect(() => {
     setMounted(true);
   }, []);
 
-  if (!mounted) return null;
+  if (pathname?.startsWith("/admin") || pathname?.startsWith("/store-owner")) {
+    return null;
+  }
+
+  if (!mounted || unpublished || !settings) return null;
+
+  const cms = settings || DEFAULT_SITE_SETTINGS_CMS;
+  if (!cms.announcementEnabled) return null;
 
   return (
     <AnimatePresence>
@@ -37,20 +42,24 @@ export default function AnnouncementBar() {
                 <Hammer className="w-4 h-4 text-[#D7C2A3]" />
               </div>
               <p className="text-[#F8F6F1] text-[13px] md:text-sm font-medium tracking-wide">
-                <span className="text-[#D7C2A3] font-bold mr-1">COMING SOON:</span> 
-                Our website is currently under development. Need assistance?
+                {cms.announcementBadge && (
+                  <span className="text-[#D7C2A3] font-bold mr-1">{cms.announcementBadge}</span>
+                )}
+                {cms.announcementText}
               </p>
             </div>
-            
+
             <div className="flex items-center gap-4 shrink-0">
-              <a 
-                href="tel:+919571179677" 
-                className="inline-flex items-center justify-center gap-2 bg-[#D7C2A3] text-[#0D3B66] px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider hover:bg-white transition-colors"
-              >
-                <Phone className="w-3.5 h-3.5" />
-                +91 95711 79677
-              </a>
-              <button 
+              {cms.announcementPhone && (
+                <a
+                  href={`tel:${cms.announcementPhone.replace(/\s+/g, "")}`}
+                  className="inline-flex items-center justify-center gap-2 bg-[#D7C2A3] text-[#0D3B66] px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider hover:bg-white transition-colors"
+                >
+                  <Phone className="w-3.5 h-3.5" />
+                  {cms.announcementPhone}
+                </a>
+              )}
+              <button
                 onClick={() => setIsVisible(false)}
                 className="text-[#F8F6F1]/50 hover:text-[#F8F6F1] transition-colors p-1 hidden sm:block"
                 aria-label="Dismiss announcement"

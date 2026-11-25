@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Project } from "@/lib/types";
 import { addProject, updateProject } from "@/lib/firebase-services";
+import { CMSMediaField } from "@/components/admin/cms-media-field";
 import { X, Loader2 } from "lucide-react";
 
 interface ProjectModalProps {
@@ -16,17 +17,25 @@ export function ProjectModal({ isOpen, onClose, project, onSaved }: ProjectModal
   
   const [name, setName] = useState(project?.name || "");
   const [location, setLocation] = useState(project?.location || "");
+  const [category, setCategory] = useState(project?.category || "Stepwell Restoration");
   const [status, setStatus] = useState(project?.status || "planning");
   const [progress, setProgress] = useState(project?.progress || 0);
   const [description, setDescription] = useState(project?.description || "");
+  const [featuredImage, setFeaturedImage] = useState(project?.featuredImage || project?.images?.[0] || "");
+  const [featured, setFeatured] = useState(Boolean(project?.featured));
+  const [published, setPublished] = useState(project?.published !== false);
 
   useEffect(() => {
     if (isOpen) {
       setName(project?.name || "");
       setLocation(project?.location || "");
+      setCategory(project?.category || "Stepwell Restoration");
       setStatus(project?.status || "planning");
       setProgress(project?.progress || 0);
       setDescription(project?.description || "");
+      setFeaturedImage(project?.featuredImage || project?.images?.[0] || "");
+      setFeatured(Boolean(project?.featured));
+      setPublished(project?.published !== false);
       setError(null);
     }
   }, [project, isOpen]);
@@ -43,14 +52,24 @@ export function ProjectModal({ isOpen, onClose, project, onSaved }: ProjectModal
         throw new Error("Please fill in all required fields.");
       }
 
+      const mergedImages = Array.from(
+        new Set([featuredImage, ...(project?.images || [])].filter(Boolean))
+      );
+
       const projectData = {
         name,
-        slug: name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)+/g, ""),
+        slug: project?.slug || name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)+/g, ""),
         location,
+        category: category || "Stepwell Restoration",
         status: status as 'planning' | 'active' | 'completed',
         progress: Number(progress),
         description,
-        images: project?.images || [],
+        story: project?.story || description,
+        featuredImage,
+        images: mergedImages,
+        featured,
+        published,
+        updatedAt: new Date().toISOString(),
       };
 
       if (project) {
@@ -153,6 +172,36 @@ export function ProjectModal({ isOpen, onClose, project, onSaved }: ProjectModal
                   className="w-full bg-white border border-surface-blue-dark rounded-xl px-4 py-3 text-primary-blue focus:outline-none focus:border-accent-blue transition-colors resize-none shadow-sm placeholder:text-primary-blue-light/50 font-medium"
                   placeholder="Describe the project..."
                 />
+              </div>
+
+              <div className="col-span-1 md:col-span-2">
+                <CMSMediaField
+                  label="Project Cover Photo"
+                  value={featuredImage}
+                  onChange={setFeaturedImage}
+                  section="restorations"
+                />
+              </div>
+
+              <div className="col-span-1 md:col-span-2 flex flex-wrap gap-6">
+                <label className="inline-flex items-center gap-2 text-xs font-bold text-primary-blue cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={featured}
+                    onChange={(e) => setFeatured(e.target.checked)}
+                    className="accent-[#0D3B66] w-4 h-4"
+                  />
+                  Featured on Homepage
+                </label>
+                <label className="inline-flex items-center gap-2 text-xs font-bold text-primary-blue cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={published}
+                    onChange={(e) => setPublished(e.target.checked)}
+                    className="accent-[#0D3B66] w-4 h-4"
+                  />
+                  Published on Website
+                </label>
               </div>
             </div>
 

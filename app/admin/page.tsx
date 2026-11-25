@@ -1,9 +1,10 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
 import { getStores, getProducts, getOrders, getDonations } from "@/lib/firebase-services";
 import { Store, Product } from "@/lib/types";
-import { ArrowUpRight, Building2, Heart, ShoppingBag, TrendingUp, Users, CheckCircle2, Store as StoreIcon } from "lucide-react";
+import { ArrowUpRight, Building2, Heart, ShoppingBag, TrendingUp, Users, CheckCircle2, Store as StoreIcon, Globe, Image as ImageIcon, Sparkles } from "lucide-react";
 
 export default function AdminDashboardPage() {
   const [stores, setStores] = useState<Store[]>([]);
@@ -99,6 +100,45 @@ export default function AdminDashboardPage() {
             </div>
           ))}
         </div>
+      </div>
+
+      {/* Website CMS Quick Access */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <Link
+          href="/admin/cms/homepage"
+          className="p-6 rounded-3xl bg-white border border-surface-blue-dark hover:border-accent-blue shadow-sm transition-all flex items-center justify-between gap-4"
+        >
+          <div>
+            <Globe size={20} className="text-accent-blue mb-2" />
+            <h3 className="font-serif text-lg font-bold text-primary-blue">Website CMS</h3>
+            <p className="text-xs text-primary-blue-light/70 mt-1">Edit hero, mission, impact stats, sponsors, and footer.</p>
+          </div>
+          <ArrowUpRight size={18} className="text-accent-blue shrink-0" />
+        </Link>
+
+        <Link
+          href="/admin/cms/featured-restorations"
+          className="p-6 rounded-3xl bg-white border border-surface-blue-dark hover:border-accent-blue shadow-sm transition-all flex items-center justify-between gap-4"
+        >
+          <div>
+            <Sparkles size={20} className="text-accent-blue mb-2" />
+            <h3 className="font-serif text-lg font-bold text-primary-blue">Featured Restorations</h3>
+            <p className="text-xs text-primary-blue-light/70 mt-1">Curate Toorji Ka Jhalra and restoration project stories.</p>
+          </div>
+          <ArrowUpRight size={18} className="text-accent-blue shrink-0" />
+        </Link>
+
+        <Link
+          href="/admin/media"
+          className="p-6 rounded-3xl bg-white border border-surface-blue-dark hover:border-accent-blue shadow-sm transition-all flex items-center justify-between gap-4"
+        >
+          <div>
+            <ImageIcon size={20} className="text-accent-blue mb-2" />
+            <h3 className="font-serif text-lg font-bold text-primary-blue">Media Library</h3>
+            <p className="text-xs text-primary-blue-light/70 mt-1">Upload, preview, replace, and organize Cloudinary media.</p>
+          </div>
+          <ArrowUpRight size={18} className="text-accent-blue shrink-0" />
+        </Link>
       </div>
     </div>
   );

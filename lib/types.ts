@@ -4,14 +4,26 @@ export interface Category {
   slug: string;
 }
 
-export type Role = 'ADMIN' | 'VENDOR' | 'CUSTOMER';
+export type Role = 'ADMIN' | 'VENDOR' | 'CUSTOMER' | 'admin' | 'store_owner' | 'supporter' | 'customer';
+
+export interface AdminPermissionSet {
+  canManageCMS?: boolean;
+  canPublishCMS?: boolean;
+  canManageMedia?: boolean;
+  canManageMarketplace?: boolean;
+  canManageDonations?: boolean;
+  canManagePermissions?: boolean;
+}
 
 export interface UserProfile {
   id: string;
   email: string;
+  displayName?: string;
   role: Role;
   storeId?: string;
+  permissions?: AdminPermissionSet;
   createdAt: string;
+  updatedAt?: string;
 }
 
 export interface Store {
@@ -77,16 +89,32 @@ export interface Volunteer {
   updatedAt: string;
 }
 
+export interface ProjectMediaItem {
+  id: string;
+  type: 'image' | 'video';
+  url: string;
+  caption?: string;
+}
+
 export interface Project {
   id: string;
   name: string;
   slug: string;
   location: string;
+  category?: string;
   status: 'planning' | 'active' | 'completed';
+  statusLabel?: string;
   progress: number;
   description: string;
+  story?: string;
+  featuredImage?: string;
   images: string[];
+  additionalMedia?: ProjectMediaItem[];
+  featured?: boolean;
+  published?: boolean;
+  displayOrder?: number;
   createdAt: string;
+  updatedAt?: string;
 }
 
 export interface OrderItem {

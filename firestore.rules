@@ -1,0 +1,147 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function userDoc() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && (
+        userDoc().role == 'admin' ||
+        userDoc().role == 'ADMIN'
+      );
+    }
+
+    function isStoreOwner() {
+      return isSignedIn() && (
+        userDoc().role == 'store_owner' ||
+        userDoc().role == 'VENDOR'
+      );
+    }
+
+    // --- CMS SINGLETON SECTIONS ---
+    // Public users may ONLY read `<section>/published` when status == 'published'.
+    // Draft documents (`<section>/draft`) and unpublished documents are strictly admin-only.
+    function matchCmsSection(docId) {
+      return (docId == 'published' && resource.data.status == 'published') || isAdmin();
+    }
+
+    match /siteSettings/{docId} {
+      allow read: if matchCmsSection(docId);
+      allow write: if isAdmin();
+    }
+    match /homepage/{docId} {
+      allow read: if matchCmsSection(docId);
+      allow write: if isAdmin();
+    }
+    match /aboutFoundation/{docId} {
+      allow read: if matchCmsSection(docId);
+      allow write: if isAdmin();
+    }
+    match /impactStatistics/{docId} {
+      allow read: if matchCmsSection(docId);
+      allow write: if isAdmin();
+    }
+    match /featuredRestorations/{docId} {
+      allow read: if matchCmsSection(docId);
+      allow write: if isAdmin();
+    }
+    match /recognitionMedia/{docId} {
+      allow read: if matchCmsSection(docId);
+      allow write: if isAdmin();
+    }
+    match /sponsors/{docId} {
+      allow read: if matchCmsSection(docId);
+      allow write: if isAdmin();
+    }
+    match /marketplaceContent/{docId} {
+      allow read: if matchCmsSection(docId);
+      allow write: if isAdmin();
+    }
+    match /team/{docId} {
+      allow read: if matchCmsSection(docId);
+      allow write: if isAdmin();
+    }
+    match /involvementContent/{docId} {
+      allow read: if matchCmsSection(docId);
+      allow write: if isAdmin();
+    }
+    match /footer/{docId} {
+      allow read: if matchCmsSection(docId);
+      allow write: if isAdmin();
+    }
+
+    // --- CMS MEDIA LIBRARY & REVISIONS ---
+    match /media/{mediaId} {
+      allow read: if isAdmin();
+      allow write: if isAdmin();
+    }
+
+    match /contentRevisions/{revisionId} {
+      allow read, write: if isAdmin();
+    }
+
+    match /projectDrafts/{projectId} {
+      allow read, write: if isAdmin();
+    }
+
+    // --- SHARED PROJECTS ---
+    match /projects/{projectId} {
+      allow read: if !(resource.data.published == false) || isAdmin();
+      allow write: if isAdmin();
+    }
+
+    // --- MARKETPLACE COLLECTIONS (PRESERVED) ---
+    match /stores/{storeId} {
+      allow read: if resource.data.status == 'ACTIVE' || isAdmin() || (isSignedIn() && resource.data.ownerId == request.auth.uid);
+      allow create: if isSignedIn();
+      allow update: if isAdmin() || (isSignedIn() && resource.data.ownerId == request.auth.uid);
+      allow delete: if isAdmin();
+    }
+
+    match /products/{productId} {
+      allow read: if true;
+      allow create, update, delete: if isAdmin() || isStoreOwner();
+    }
+
+    match /categories/{categoryId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // --- SENSITIVE RECORDS (PROTECTED) ---
+    match /donations/{donationId} {
+      allow create: if request.resource.data.amount is number && request.resource.data.amount >= 50;
+      allow read, update, delete: if isAdmin();
+    }
+
+    match /donors/{donorId} {
+      allow create, update: if isAdmin() || (request.resource.data.email is string);
+      allow read, delete: if isAdmin();
+    }
+
+    match /orders/{orderId} {
+      allow create: if request.resource.data.items is list;
+      allow read, update: if isAdmin() || isStoreOwner();
+      allow delete: if isAdmin();
+    }
+
+    match /volunteers/{volunteerId} {
+      allow create: if request.resource.data.fullName is string && request.resource.data.email is string;
+      allow read, update, delete: if isAdmin();
+    }
+
+    // --- USERS & ADMIN PERMISSIONS ---
+    match /users/{userId} {
+      allow read: if isAdmin() || (isSignedIn() && request.auth.uid == userId);
+      allow create: if isSignedIn() && request.auth.uid == userId && !(request.resource.data.role in ['admin', 'ADMIN']);
+      allow update: if isAdmin() || (isSignedIn() && request.auth.uid == userId && request.resource.data.role == resource.data.role && request.resource.data.permissions == resource.data.permissions);
+      allow delete: if isAdmin();
+    }
+  }
+}
