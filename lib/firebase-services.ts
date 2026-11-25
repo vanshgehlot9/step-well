@@ -32,6 +32,13 @@ export async function getStores(): Promise<Store[]> {
   return storeSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Store));
 }
 
+export async function getActiveStores(): Promise<Store[]> {
+  const storesCol = collection(db, "stores");
+  const q = query(storesCol, where("status", "==", "ACTIVE"));
+  const storeSnapshot = await getDocs(q);
+  return storeSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Store));
+}
+
 export async function getStoreById(id: string): Promise<Store | null> {
   const storeRef = doc(db, "stores", id);
   const storeSnap = await getDoc(storeRef);
@@ -44,6 +51,17 @@ export async function getStoreById(id: string): Promise<Store | null> {
 export async function getStoreBySlug(slug: string): Promise<Store | null> {
   const storesCol = collection(db, "stores");
   const q = query(storesCol, where("slug", "==", slug));
+  const querySnapshot = await getDocs(q);
+  if (!querySnapshot.empty) {
+    const docSnap = querySnapshot.docs[0];
+    return { id: docSnap.id, ...docSnap.data() } as Store;
+  }
+  return null;
+}
+
+export async function getActiveStoreBySlug(slug: string): Promise<Store | null> {
+  const storesCol = collection(db, "stores");
+  const q = query(storesCol, where("slug", "==", slug), where("status", "==", "ACTIVE"));
   const querySnapshot = await getDocs(q);
   if (!querySnapshot.empty) {
     const docSnap = querySnapshot.docs[0];
@@ -242,6 +260,17 @@ export async function getProjects(): Promise<Project[]> {
 export async function getProjectBySlug(slug: string): Promise<Project | null> {
   const projectsCol = collection(db, "projects");
   const q = query(projectsCol, where("slug", "==", slug));
+  const querySnapshot = await getDocs(q);
+  if (!querySnapshot.empty) {
+    const docSnap = querySnapshot.docs[0];
+    return { id: docSnap.id, ...docSnap.data() } as Project;
+  }
+  return null;
+}
+
+export async function getPublishedProjectBySlug(slug: string): Promise<Project | null> {
+  const projectsCol = collection(db, "projects");
+  const q = query(projectsCol, where("slug", "==", slug), where("published", "==", true));
   const querySnapshot = await getDocs(q);
   if (!querySnapshot.empty) {
     const docSnap = querySnapshot.docs[0];

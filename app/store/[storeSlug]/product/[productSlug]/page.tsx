@@ -1,7 +1,7 @@
 "use client";
 
 import { use, useState, useEffect } from "react";
-import { getStoreBySlug, getProductBySlug, getCategories } from "@/lib/firebase-services";
+import { getActiveStoreBySlug, getProductBySlug, getCategories } from "@/lib/firebase-services";
 import { Store, Product, Category } from "@/lib/types";
 import { notFound } from "next/navigation";
 import Link from "next/link";
@@ -24,7 +24,7 @@ export default function ProductPage({ params }: { params: Promise<{ storeSlug: s
     async function fetchData() {
       try {
         const [storeData, productData, categoriesData] = await Promise.all([
-          getStoreBySlug(resolvedParams.storeSlug),
+          getActiveStoreBySlug(resolvedParams.storeSlug),
           getProductBySlug(resolvedParams.productSlug),
           getCategories()
         ]);

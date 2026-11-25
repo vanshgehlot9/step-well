@@ -1,7 +1,7 @@
 "use client";
 
 import { use, useState, useEffect, useMemo } from "react";
-import { getStoreBySlug, getProductsByStore, getCategories } from "@/lib/firebase-services";
+import { getActiveStoreBySlug, getProductsByStore, getCategories } from "@/lib/firebase-services";
 import { Store, Product, Category } from "@/lib/types";
 import { notFound } from "next/navigation";
 import Link from "next/link";
@@ -54,8 +54,8 @@ export default function StorePage({ params }: { params: Promise<{ storeSlug: str
   useEffect(() => {
     async function fetchData() {
       try {
-        const storeData = await getStoreBySlug(resolvedParams.storeSlug);
-        if (storeData && storeData.status === 'ACTIVE') {
+        const storeData = await getActiveStoreBySlug(resolvedParams.storeSlug);
+        if (storeData) {
           setStore(storeData);
           const [productsData, categoriesData] = await Promise.all([
             getProductsByStore(storeData.id),

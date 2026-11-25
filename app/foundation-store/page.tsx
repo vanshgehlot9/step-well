@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
-import { getStores } from "@/lib/firebase-services";
+import { getActiveStores } from "@/lib/firebase-services";
 import { Store } from "@/lib/types";
 import { Search, X, SlidersHorizontal } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
@@ -22,8 +22,8 @@ export default function FoundationStoreLanding() {
   useEffect(() => {
     async function fetchStores() {
       try {
-        const data = await getStores();
-        setStores(data.filter((s) => s.status === "ACTIVE"));
+        const data = await getActiveStores();
+        setStores(data);
       } catch (err) {
         console.error("Failed to fetch stores:", err);
       } finally {

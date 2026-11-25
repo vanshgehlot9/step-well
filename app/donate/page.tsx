@@ -106,8 +106,11 @@ export default function DonatePage() {
           .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
           .slice(0, 5);
         setRecentDonations(sorted);
-      } catch (error) {
-        console.error("Error fetching recent donations:", error);
+      } catch (error: unknown) {
+        const code = (error as { code?: string })?.code;
+        if (code !== "permission-denied") {
+          console.error("Error fetching recent donations:", error);
+        }
       }
     }
     fetchRecentDonations();

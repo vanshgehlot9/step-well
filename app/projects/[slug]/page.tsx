@@ -5,7 +5,7 @@ import Link from "next/link";
 import { ArrowLeft, MapPin, Calendar, Users, ChevronLeft, ChevronRight, Heart, Loader2 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { getProjectBySlug } from "@/lib/firebase-services";
+import { getProjectBySlug, getPublishedProjectBySlug } from "@/lib/firebase-services";
 import { INITIAL_PROJECTS_SEED } from "@/lib/cms-defaults";
 import { Project } from "@/lib/types";
 import { useAuth } from "@/context/auth-context";
@@ -72,7 +72,9 @@ export default function ProjectDetailPage() {
     async function loadProject() {
       if (!slug) return;
       try {
-        const data = await getProjectBySlug(slug);
+        const data = isAdmin
+          ? await getProjectBySlug(slug)
+          : await getPublishedProjectBySlug(slug);
         if (data && (data.published !== false || isAdmin)) {
           setProject(data);
         } else if (!data) {

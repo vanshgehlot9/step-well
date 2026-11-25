@@ -325,18 +325,15 @@ export async function getAllProjectsOrdered(): Promise<Project[]> {
 
 export async function getPublishedProjects(featuredOnly = false): Promise<Project[]> {
   try {
-    const snapshot = await getDocs(collection(db, "projects"));
+    const q = query(collection(db, "projects"), where("published", "==", true));
+    const snapshot = await getDocs(q);
     const list = snapshot.docs
       .map((d) => ({ id: d.id, ...d.data() } as Project))
-      .filter((p) => p.published !== false)
       .filter((p) => (featuredOnly ? p.featured === true : true))
       .sort((a, b) => (a.displayOrder ?? 999) - (b.displayOrder ?? 999));
 
-    if (list.length === 0 && featuredOnly) {
-      // If `projects` collection hasn't been seeded yet, fall back to initial restorations
-      if (snapshot.empty) {
-        return INITIAL_PROJECTS_SEED.map((p, idx) => ({ id: `initial-${idx + 1}`, ...p }));
-      }
+    if (list.length === 0 && featuredOnly && snapshot.empty) {
+      return INITIAL_PROJECTS_SEED.map((p, idx) => ({ id: `initial-${idx + 1}`, ...p }));
     }
     return list;
   } catch (err) {

@@ -25,10 +25,10 @@ service cloud.firestore {
     }
 
     // --- CMS SINGLETON SECTIONS ---
-    // Public users may ONLY read `<section>/published` when status == 'published'.
-    // Draft documents (`<section>/draft`) and unpublished documents are strictly admin-only.
+    // Public users may ONLY read `<section>/published` when status == 'published' (or when not yet created).
+    // Draft documents (`<section>/draft`) and explicitly unpublished documents are strictly admin-only.
     function matchCmsSection(docId) {
-      return (docId == 'published' && resource.data.status == 'published') || isAdmin();
+      return (docId == 'published' && (resource == null || resource.data.status == 'published')) || isAdmin();
     }
 
     match /siteSettings/{docId} {
@@ -92,7 +92,7 @@ service cloud.firestore {
 
     // --- SHARED PROJECTS ---
     match /projects/{projectId} {
-      allow read: if !(resource.data.published == false) || isAdmin();
+      allow read: if resource.data.published == true || isAdmin();
       allow write: if isAdmin();
     }
 

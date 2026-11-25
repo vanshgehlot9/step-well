@@ -2,7 +2,7 @@
 
 import { useCart } from "@/context/cart-context";
 import { useState, useEffect } from "react";
-import { getStores } from "@/lib/firebase-services";
+import { getActiveStores } from "@/lib/firebase-services";
 import { Store } from "@/lib/types";
 import Link from "next/link";
 import { Minus, Plus, Trash2, ArrowRight, ShoppingBag } from "lucide-react";
@@ -16,7 +16,7 @@ export default function CartPage() {
   useEffect(() => {
     async function fetchStoresData() {
       try {
-        const storesData = await getStores();
+        const storesData = await getActiveStores();
         setStores(storesData);
       } catch (err) {
         console.error("Failed to load stores for cart:", err);

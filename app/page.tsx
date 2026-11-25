@@ -7,7 +7,7 @@ import { Tweet } from "react-tweet";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { getStores } from "@/lib/firebase-services";
+import { getActiveStores } from "@/lib/firebase-services";
 import { getPublishedProjects } from "@/lib/cms-services";
 import { Project, Store } from "@/lib/types";
 import { StoreCard } from "@/components/store-card";
@@ -72,10 +72,10 @@ export default function Home() {
     async function fetchDynamicData() {
       try {
         const [storesData, projectsData] = await Promise.all([
-          getStores(),
+          getActiveStores(),
           getPublishedProjects(true),
         ]);
-        setStores(storesData.filter((s) => s.status === "ACTIVE"));
+        setStores(storesData);
         if (projectsData.length > 0) {
           setFeaturedProjects(projectsData);
         } else {
