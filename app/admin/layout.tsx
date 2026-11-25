@@ -18,6 +18,7 @@ import {
   Home,
   Image as ImageIcon,
   Info,
+  KeyRound,
   Landmark,
   LayoutDashboard,
   LogOut,
@@ -81,6 +82,7 @@ const sidebarGroups: NavGroup[] = [
       { href: "/admin/media", label: "Media Library", icon: ImageIcon },
       { href: "/admin/settings", label: "Website Settings", icon: Settings },
       { href: "/admin/permissions", label: "Admin Permissions", icon: ShieldCheck },
+      { href: "/admin/security", label: "Account & Password", icon: KeyRound },
     ],
   },
 ];
@@ -273,8 +275,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               <span className={collapsed ? "lg:hidden" : ""}>View Public Website</span>
             </Link>
 
-            <div
-              className={`flex items-center gap-3 px-2.5 py-2 ${
+            <Link
+              href="/admin/security"
+              onClick={() => setSidebarOpen(false)}
+              title="Account & Password"
+              className={`flex items-center gap-3 px-2.5 py-2 rounded-xl hover:bg-surface-blue transition-colors ${
                 collapsed ? "lg:justify-center" : ""
               }`}
             >
@@ -294,7 +299,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                   {user?.email || "Admin Access"}
                 </p>
               </div>
-            </div>
+            </Link>
 
             <button
               onClick={signOut}

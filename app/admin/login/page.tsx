@@ -7,25 +7,66 @@ import { useAuth } from "@/context/auth-context";
 
 export default function AdminLoginPage() {
     const router = useRouter();
-    const { signIn, signInWithGoogle, user, isAdmin } = useAuth();
+    const { signIn, signInWithGoogle, sendPasswordReset, user, isAdmin } = useAuth();
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [showPassword, setShowPassword] = useState(false);
     const [loading, setLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+    const [resetSent, setResetSent] = useState<string | null>(null);
 
     const handleSubmit = async (event: React.FormEvent) => {
         event.preventDefault();
+        setError(null);
+        setResetSent(null);
         setLoading(true);
-        await signIn(email, password);
-        router.push("/admin");
-        setLoading(false);
+        try {
+            await signIn(email, password);
+            router.push("/admin");
+        } catch (err: unknown) {
+            const code = (err as { code?: string })?.code || "";
+            if (code === "auth/invalid-credential" || code === "auth/wrong-password" || code === "auth/user-not-found") {
+                setError("Invalid Admin ID or password. Please check your credentials and try again.");
+            } else if (code === "auth/too-many-requests") {
+                setError("Too many failed attempts. Please wait a moment or reset your password.");
+            } else {
+                setError(err instanceof Error ? err.message : "Sign-in failed.");
+            }
+        } finally {
+            setLoading(false);
+        }
     };
 
     const handleGoogle = async () => {
+        setError(null);
+        setResetSent(null);
         setLoading(true);
-        await signInWithGoogle();
-        router.push("/admin");
-        setLoading(false);
+        try {
+            await signInWithGoogle();
+            router.push("/admin");
+        } catch (err: unknown) {
+            setError(err instanceof Error ? err.message : "Google sign-in failed.");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleForgotPassword = async () => {
+        setError(null);
+        setResetSent(null);
+        if (!email.trim()) {
+            setError("Enter your Admin Email ID above first, then click Forgot Password.");
+            return;
+        }
+        setLoading(true);
+        try {
+            await sendPasswordReset(email.trim());
+            setResetSent(`Password reset link sent to ${email.trim()}. Check your inbox.`);
+        } catch (err: unknown) {
+            setError(err instanceof Error ? err.message : "Could not send password reset email.");
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
@@ -38,18 +79,30 @@ export default function AdminLoginPage() {
                         S
                     </div>
                     <h1 className="text-2xl font-bold text-white tracking-wide">Admin Panel</h1>
-                    <p className="text-white/40 text-sm mt-1">Sign in to manage stepwells</p>
+                    <p className="text-white/40 text-sm mt-1">Sign in to manage stepwells &amp; website CMS</p>
                 </div>
 
                 <div className="bg-white/[0.03] backdrop-blur-md rounded-2xl border border-white/[0.08] p-8 shadow-2xl">
                     <div className="mb-6 rounded-xl border border-accent-blue/20 bg-accent-blue/10 p-4 text-sm text-accent-blue flex items-start gap-3">
-                        <ShieldCheck size={18} className="mt-0.5" />
-                        <span>Please use your authorized admin credentials.</span>
+                        <ShieldCheck size={18} className="mt-0.5 shrink-0" />
+                        <span>Please use your authorized admin ID and password.</span>
                     </div>
+
+                    {error && (
+                        <div className="mb-5 rounded-xl border border-red-500/30 bg-red-500/10 p-3.5 text-xs font-medium text-red-300">
+                            {error}
+                        </div>
+                    )}
+
+                    {resetSent && (
+                        <div className="mb-5 rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-3.5 text-xs font-medium text-emerald-300">
+                            {resetSent}
+                        </div>
+                    )}
 
                     <form onSubmit={handleSubmit} className="space-y-5">
                         <div className="space-y-2">
-                            <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/40">Email Address</label>
+                            <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/40">Admin ID (Email Address)</label>
                             <input
                                 type="email"
                                 value={email}
@@ -61,7 +114,17 @@ export default function AdminLoginPage() {
                         </div>
 
                         <div className="space-y-2">
-                            <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/40">Password</label>
+                            <div className="flex items-center justify-between">
+                                <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/40">Password</label>
+                                <button
+                                    type="button"
+                                    onClick={handleForgotPassword}
+                                    disabled={loading}
+                                    className="text-[11px] font-semibold text-accent-blue hover:underline"
+                                >
+                                    Forgot Password?
+                                </button>
+                            </div>
                             <div className="relative">
                                 <input
                                     type={showPassword ? "text" : "password"}
