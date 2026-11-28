@@ -308,12 +308,21 @@ export default function InitiativeDetailPage({
           <div className="max-w-5xl mx-auto px-5 md:px-10 space-y-8">
             <div className="flex items-center gap-3">
               <span className="text-[11px] font-bold uppercase tracking-[0.22em] text-accent-blue">
-                Field Videos
+                Field Videos &amp; Reels
               </span>
               <div className="h-px bg-surface-blue-dark flex-1" />
+              <span className="text-xs text-[#4A6080] font-medium">
+                {videos.length} {videos.length === 1 ? "item" : "items"}
+              </span>
             </div>
 
-            <div className="space-y-8">
+            <div
+              className={
+                videos.length > 1
+                  ? "grid grid-cols-1 lg:grid-cols-2 gap-6 items-start"
+                  : "space-y-8"
+              }
+            >
               {videos.map((vid) => {
                 const resolved = resolveInitiativeVideo(vid.video_url);
                 return (

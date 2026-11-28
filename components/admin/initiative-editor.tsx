@@ -398,6 +398,14 @@ export function InitiativeEditor({ initialData }: InitiativeEditorProps) {
     showNotice("success", "Instagram Reel added to initiative videos.");
   };
 
+  const moveVideo = (idx: number, dir: -1 | 1) => {
+    const target = idx + dir;
+    if (target < 0 || target >= videos.length) return;
+    const copy = [...videos];
+    [copy[idx], copy[target]] = [copy[target], copy[idx]];
+    setVideos(copy.map((vid, i) => ({ ...vid, display_order: i + 1 })));
+  };
+
   const removeVideo = async (idx: number) => {
     const target = videos[idx];
     if (target.cloudinary_public_id) {
@@ -1248,13 +1256,33 @@ export function InitiativeEditor({ initialData }: InitiativeEditorProps) {
                               </a>
                             )}
                           </div>
-                          <button
-                            type="button"
-                            onClick={() => removeVideo(idx)}
-                            className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-red-50 border border-red-200 text-xs font-bold text-red-600"
-                          >
-                            <Trash2 size={12} /> Remove
-                          </button>
+                          <div className="flex items-center gap-1.5">
+                            <button
+                              type="button"
+                              onClick={() => moveVideo(idx, -1)}
+                              disabled={idx === 0}
+                              title="Move up"
+                              className="p-1.5 rounded-xl bg-white border border-surface-blue-dark disabled:opacity-30"
+                            >
+                              <ArrowUp size={12} />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => moveVideo(idx, 1)}
+                              disabled={idx === videos.length - 1}
+                              title="Move down"
+                              className="p-1.5 rounded-xl bg-white border border-surface-blue-dark disabled:opacity-30"
+                            >
+                              <ArrowDown size={12} />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => removeVideo(idx)}
+                              className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-red-50 border border-red-200 text-xs font-bold text-red-600"
+                            >
+                              <Trash2 size={12} /> Remove
+                            </button>
+                          </div>
                         </div>
 
                         <input

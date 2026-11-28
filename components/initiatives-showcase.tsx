@@ -85,7 +85,8 @@ export default function InitiativesShowcase({
 
   const [lightboxImages, setLightboxImages] = useState<InitiativeImage[] | null>(null);
   const [lightboxIndex, setLightboxIndex] = useState(0);
-  const [activeVideo, setActiveVideo] = useState<InitiativeVideo | null>(null);
+  const [videoPlaylist, setVideoPlaylist] = useState<InitiativeVideo[] | null>(null);
+  const [videoIndex, setVideoIndex] = useState(0);
 
   useEffect(() => {
     getPublishedInitiativesFull()
@@ -126,11 +127,17 @@ export default function InitiativesShowcase({
     setLightboxIndex(index);
   };
 
+  const openVideoModal = (vids: InitiativeVideo[], index = 0) => {
+    if (!vids.length) return;
+    setVideoPlaylist(vids);
+    setVideoIndex(index);
+  };
+
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
         setLightboxImages(null);
-        setActiveVideo(null);
+        setVideoPlaylist(null);
       }
       if (lightboxImages && lightboxImages.length > 1) {
         if (e.key === "ArrowRight") {
@@ -140,10 +147,18 @@ export default function InitiativesShowcase({
           setLightboxIndex((p) => (p - 1 + lightboxImages.length) % lightboxImages.length);
         }
       }
+      if (videoPlaylist && videoPlaylist.length > 1) {
+        if (e.key === "ArrowRight") {
+          setVideoIndex((p) => (p + 1) % videoPlaylist.length);
+        }
+        if (e.key === "ArrowLeft") {
+          setVideoIndex((p) => (p - 1 + videoPlaylist.length) % videoPlaylist.length);
+        }
+      }
     };
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [lightboxImages]);
+  }, [lightboxImages, videoPlaylist]);
 
   const featuredHeroImage =
     activeFeatured?.images.find((i) => i.is_primary)?.image_url ||
@@ -151,7 +166,8 @@ export default function InitiativesShowcase({
     activeFeatured?.images[0]?.image_url ||
     "";
 
-  const featuredVideo = activeFeatured?.videos[0] || null;
+  const featuredVideos = activeFeatured?.videos || [];
+  const featuredVideo = featuredVideos[0] || null;
   const featuredInstagram = activeFeatured?.links.find(
     (l) => l.platform === "instagram" && l.url
   );
@@ -297,14 +313,16 @@ export default function InitiativesShowcase({
                           Read Full Story <ArrowRight size={15} />
                         </Link>
 
-                        {featuredVideo && (
+                        {featuredVideos.length > 0 && (
                           <button
                             type="button"
-                            onClick={() => setActiveVideo(featuredVideo)}
+                            onClick={() => openVideoModal(featuredVideos, 0)}
                             className="inline-flex items-center justify-center gap-2 rounded-full border border-surface-blue-dark bg-surface-blue/50 hover:border-accent-blue hover:bg-white text-[#0D3B66] text-xs sm:text-sm font-semibold px-5 py-3 transition-all"
                           >
                             <Play size={14} className="fill-current text-accent-blue" />
-                            Watch Video
+                            {featuredVideos.length > 1
+                              ? `Watch Videos (${featuredVideos.length})`
+                              : "Watch Video"}
                           </button>
                         )}
 
@@ -327,8 +345,8 @@ export default function InitiativesShowcase({
                     <div className="grid grid-cols-1 sm:grid-cols-[1fr_110px] md:grid-cols-[1fr_124px] gap-3">
                       <div
                         onClick={() => {
-                          if (featuredVideo) {
-                            setActiveVideo(featuredVideo);
+                          if (featuredVideos.length > 0) {
+                            openVideoModal(featuredVideos, 0);
                           } else if (activeFeatured.images.length > 0) {
                             openLightbox(activeFeatured.images, 0);
                           }
@@ -349,13 +367,13 @@ export default function InitiativesShowcase({
 
                         <div className="absolute inset-0 bg-gradient-to-t from-[#0D3B66]/35 via-transparent to-transparent pointer-events-none" />
 
-                        {featuredVideo && (
+                        {featuredVideos.length > 0 && (
                           <button
                             type="button"
                             aria-label="Play Initiative Video"
                             onClick={(e) => {
                               e.stopPropagation();
-                              setActiveVideo(featuredVideo);
+                              openVideoModal(featuredVideos, 0);
                             }}
                             className="absolute inset-0 flex items-center justify-center"
                           >
@@ -366,15 +384,22 @@ export default function InitiativesShowcase({
                         )}
 
                         {(featuredVideo?.duration_label ||
+                          featuredVideos.length > 1 ||
                           (featuredVideo &&
-                            resolveInitiativeVideo(featuredVideo.video_url).kind === "instagram")) && (
-                          <span className="absolute bottom-3 right-3 px-2.5 py-1 rounded-md bg-[#0D3B66]/85 text-white text-[11px] font-mono font-semibold backdrop-blur-sm inline-flex items-center gap-1">
-                            {resolveInitiativeVideo(featuredVideo.video_url).kind === "instagram" ? (
+                            resolveInitiativeVideo(featuredVideo.video_url).kind !== "direct")) && (
+                          <span className="absolute bottom-3 right-3 px-2.5 py-1 rounded-md bg-[#0D3B66]/85 text-white text-[11px] font-mono font-semibold backdrop-blur-sm inline-flex items-center gap-1.5">
+                            {featuredVideo &&
+                            resolveInitiativeVideo(featuredVideo.video_url).kind === "instagram" ? (
                               <>
-                                <Instagram size={11} /> Insta Reel
+                                <Instagram size={11} />
+                                {featuredVideos.length > 1
+                                  ? `${featuredVideos.length} Reels / Videos`
+                                  : "Insta Reel"}
                               </>
+                            ) : featuredVideos.length > 1 ? (
+                              `${featuredVideos.length} Videos`
                             ) : (
-                              featuredVideo.duration_label
+                              featuredVideo?.duration_label || "YouTube Video"
                             )}
                           </span>
                         )}
@@ -634,80 +659,185 @@ export default function InitiativesShowcase({
         )}
       </AnimatePresence>
 
-      {/* Video Player Modal */}
+      {/* Video & Reel Playlist Modal */}
       <AnimatePresence>
-        {activeVideo && (() => {
-          const resolved = resolveInitiativeVideo(activeVideo.video_url, true);
+        {videoPlaylist && videoPlaylist[videoIndex] && (() => {
+          const currentVideo = videoPlaylist[videoIndex];
+          const resolved = resolveInitiativeVideo(currentVideo.video_url, true);
           const isInsta = resolved.kind === "instagram";
+          const hasMultiple = videoPlaylist.length > 1;
           return (
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              onClick={() => setActiveVideo(null)}
+              onClick={() => setVideoPlaylist(null)}
               className="fixed inset-0 z-[200] bg-black/90 backdrop-blur-md flex items-center justify-center p-4"
             >
               <div
                 onClick={(e) => e.stopPropagation()}
-                className={`w-full ${
-                  isInsta ? "max-w-[430px] bg-white" : "max-w-4xl bg-[#070F1C]"
-                } rounded-3xl overflow-hidden border border-white/15 shadow-2xl`}
+                style={{
+                  maxWidth: isInsta ? "400px" : "820px",
+                  maxHeight: "88vh",
+                }}
+                className={`relative w-full flex flex-col ${
+                  isInsta ? "bg-white border-surface-blue-dark" : "bg-[#070F1C] border-white/15"
+                } rounded-2xl overflow-hidden border shadow-2xl`}
               >
+                {/* Minimal Header */}
                 <div
-                  className={`px-5 py-3.5 flex items-center justify-between border-b ${
+                  className={`px-4 py-3 flex items-center justify-between gap-2 border-b shrink-0 ${
                     isInsta
                       ? "border-surface-blue-dark text-[#0D3B66] bg-[#F8FAFC]"
                       : "border-white/10 text-white"
                   }`}
                 >
-                  <p className="font-serif text-base font-semibold truncate flex items-center gap-2">
-                    {isInsta && <Instagram size={16} className="text-pink-600 shrink-0" />}
-                    {activeVideo.title || (isInsta ? "Instagram Reel" : "Initiative Video")}
-                  </p>
-                  <div className="flex items-center gap-2 shrink-0">
+                  <div className="min-w-0 flex items-center gap-2">
+                    {isInsta ? (
+                      <Instagram size={15} className="text-pink-600 shrink-0" />
+                    ) : (
+                      <Play size={14} className="text-accent-blue shrink-0 fill-current" />
+                    )}
+                    <p className="font-serif text-sm sm:text-base font-semibold truncate">
+                      {currentVideo.title || (isInsta ? "Instagram Reel" : "Initiative Video")}
+                    </p>
+                    {hasMultiple && (
+                      <span
+                        className={`text-[11px] font-mono px-2 py-0.5 rounded-full shrink-0 ${
+                          isInsta
+                            ? "bg-surface-blue text-[#0D3B66] border border-surface-blue-dark"
+                            : "bg-white/10 text-white/80"
+                        }`}
+                      >
+                        {videoIndex + 1}/{videoPlaylist.length}
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="flex items-center gap-1 shrink-0">
+                    {hasMultiple && (
+                      <>
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setVideoIndex(
+                              (p) => (p - 1 + videoPlaylist.length) % videoPlaylist.length
+                            )
+                          }
+                          aria-label="Previous video"
+                          className={`p-1.5 rounded-lg border ${
+                            isInsta
+                              ? "border-surface-blue-dark hover:bg-surface-blue text-[#0D3B66]"
+                              : "border-white/15 hover:bg-white/10 text-white"
+                          }`}
+                        >
+                          <ChevronLeft size={15} />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setVideoIndex((p) => (p + 1) % videoPlaylist.length)
+                          }
+                          aria-label="Next video"
+                          className={`p-1.5 rounded-lg border ${
+                            isInsta
+                              ? "border-surface-blue-dark hover:bg-surface-blue text-[#0D3B66]"
+                              : "border-white/15 hover:bg-white/10 text-white"
+                          }`}
+                        >
+                          <ChevronRight size={15} />
+                        </button>
+                      </>
+                    )}
                     {isInsta && (
                       <a
                         href={resolved.externalUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-surface-blue border border-surface-blue-dark text-[11px] font-bold text-[#0D3B66] hover:border-accent-blue"
+                        title="Open on Instagram"
+                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-surface-blue border border-surface-blue-dark text-[11px] font-semibold text-[#0D3B66] hover:border-accent-blue"
                       >
-                        Open Reel <ExternalLink size={11} />
+                        Open <ExternalLink size={11} />
                       </a>
                     )}
                     <button
                       type="button"
-                      onClick={() => setActiveVideo(null)}
+                      onClick={() => setVideoPlaylist(null)}
                       aria-label="Close video player"
                       className={`p-1.5 rounded-lg ${
                         isInsta ? "hover:bg-surface-blue-dark/60" : "hover:bg-white/10"
                       }`}
                     >
-                      <X size={18} />
+                      <X size={16} />
                     </button>
                   </div>
                 </div>
+
+                {/* Minimal Switcher Tabs */}
+                {hasMultiple && (
+                  <div
+                    className={`px-4 py-2 flex items-center gap-1.5 overflow-x-auto border-b shrink-0 ${
+                      isInsta
+                        ? "bg-white border-surface-blue-dark"
+                        : "bg-white/5 border-white/10"
+                    }`}
+                  >
+                    {videoPlaylist.map((vid, idx) => {
+                      const vidKind = resolveInitiativeVideo(vid.video_url).kind;
+                      const isActive = idx === videoIndex;
+                      return (
+                        <button
+                          key={vid.id || idx}
+                          type="button"
+                          onClick={() => setVideoIndex(idx)}
+                          className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold whitespace-nowrap shrink-0 transition-all border ${
+                            isActive
+                              ? "bg-[#0D3B66] text-white border-[#0D3B66]"
+                              : isInsta
+                              ? "bg-surface-blue/50 text-[#0D3B66] border-surface-blue-dark hover:border-accent-blue"
+                              : "bg-white/10 text-white/80 border-white/15 hover:bg-white/20"
+                          }`}
+                        >
+                          {vidKind === "instagram" ? (
+                            <Instagram size={11} className={isActive ? "text-pink-300" : "text-pink-600"} />
+                          ) : (
+                            <Play size={10} className="fill-current" />
+                          )}
+                          <span>
+                            {idx + 1}. {vid.title || (vidKind === "instagram" ? "Reel" : "Video")}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+
                 {isInsta ? (
-                  <div className="w-full max-h-[80vh] overflow-y-auto bg-[#F8FAFC] p-3 sm:p-4">
+                  <div className="w-full overflow-y-auto bg-[#F8FAFC] p-3">
                     <InstagramReelEmbed
+                      key={currentVideo.id || currentVideo.video_url}
                       embedUrl={resolved.embedUrl}
                       externalUrl={resolved.externalUrl}
-                      title={activeVideo.title || "Instagram Reel"}
+                      title={currentVideo.title || "Instagram Reel"}
+                      compact
+                      showExternalLink={false}
                     />
                   </div>
                 ) : (
                   <div className="aspect-video bg-black">
                     {resolved.kind === "youtube" ? (
                       <iframe
+                        key={currentVideo.id || currentVideo.video_url}
                         src={resolved.embedUrl}
                         className="w-full h-full"
                         allow="autoplay; fullscreen"
                         allowFullScreen
-                        title={activeVideo.title || "Initiative video"}
+                        title={currentVideo.title || "Initiative video"}
                       />
                     ) : (
                       <video
-                        src={activeVideo.video_url}
+                        key={currentVideo.id || currentVideo.video_url}
+                        src={currentVideo.video_url}
                         controls
                         autoPlay
                         playsInline
