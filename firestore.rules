@@ -6,19 +6,23 @@ service cloud.firestore {
       return request.auth != null;
     }
 
+    function hasUserDoc() {
+      return exists(/databases/$(database)/documents/users/$(request.auth.uid));
+    }
+
     function userDoc() {
       return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
     }
 
     function isAdmin() {
-      return isSignedIn() && (
+      return isSignedIn() && hasUserDoc() && (
         userDoc().role == 'admin' ||
         userDoc().role == 'ADMIN'
       );
     }
 
     function isStoreOwner() {
-      return isSignedIn() && (
+      return isSignedIn() && hasUserDoc() && (
         userDoc().role == 'store_owner' ||
         userDoc().role == 'VENDOR'
       );
@@ -93,6 +97,28 @@ service cloud.firestore {
     // --- SHARED PROJECTS ---
     match /projects/{projectId} {
       allow read: if resource.data.published == true || isAdmin();
+      allow write: if isAdmin();
+    }
+
+    // --- OUR INITIATIVES (NORMALIZED COLLECTIONS) ---
+    match /initiatives/{initiativeId} {
+      allow read: if resource.data.publication_status == 'published' || isAdmin();
+      allow write: if isAdmin();
+    }
+    match /initiative_images/{imageId} {
+      allow read: if resource.data.is_published == true || isAdmin();
+      allow write: if isAdmin();
+    }
+    match /initiative_videos/{videoId} {
+      allow read: if resource.data.is_published == true || isAdmin();
+      allow write: if isAdmin();
+    }
+    match /initiative_links/{linkId} {
+      allow read: if resource.data.is_published == true || isAdmin();
+      allow write: if isAdmin();
+    }
+    match /initiative_team/{memberId} {
+      allow read: if resource.data.is_published == true || isAdmin();
       allow write: if isAdmin();
     }
 

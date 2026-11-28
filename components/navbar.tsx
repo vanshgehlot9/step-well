@@ -11,7 +11,7 @@ import { FooterCMS, SiteSettingsCMS } from "@/lib/cms-types";
 import { DEFAULT_FOOTER_CMS, DEFAULT_SITE_SETTINGS_CMS } from "@/lib/cms-defaults";
 
 const navLinks = [
-    { name: "Initiative", href: "/get-involved" },
+    { name: "Initiatives", href: "/initiatives" },
     { name: "Donate Now", href: "/donate" },
     { name: "Shop", href: "/shop" },
     { name: "Our Team", href: "/team" },
@@ -73,17 +73,21 @@ export default function Navbar() {
 
                 {/* Desktop Navigation - Centered */}
                 <nav className="hidden md:flex absolute left-1/2 -translate-x-1/2 items-center gap-6 lg:gap-10">
-                    {navLinks.map((link) => (
+                    {navLinks.map((link) => {
+                        const isActive =
+                            pathname === link.href ||
+                            (link.href !== "/" && pathname?.startsWith(`${link.href}/`));
+                        return (
                         <Link
                             key={link.name}
                             href={link.href}
                             className={cn(
                                 "relative text-[0.9rem] font-medium tracking-wide transition-all duration-300 whitespace-nowrap",
-                                pathname === link.href ? "text-[#F8F6F1]" : "text-[#F8F6F1]/70 hover:text-[#F8F6F1]"
+                                isActive ? "text-[#F8F6F1]" : "text-[#F8F6F1]/70 hover:text-[#F8F6F1]"
                             )}
                         >
                             {link.name}
-                            {pathname === link.href && (
+                            {isActive && (
                                 <motion.div
                                     layoutId="navbar-indicator"
                                     className="absolute -bottom-2 left-0 right-0 h-[2px] bg-[#D7C2A3] rounded-t-full"
@@ -92,7 +96,8 @@ export default function Navbar() {
                                 />
                             )}
                         </Link>
-                    ))}
+                        );
+                    })}
                 </nav>
 
                 {/* Desktop Actions - Aligned Right */}

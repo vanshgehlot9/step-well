@@ -66,7 +66,7 @@ const sidebarGroups: NavGroup[] = [
     items: [
       { href: "/admin/cms/homepage", label: "Homepage", icon: Home },
       { href: "/admin/cms/about", label: "About Foundation", icon: Info },
-      { href: "/admin/cms/featured-restorations", label: "Featured Restorations", icon: Sparkles },
+      { href: "/admin/initiatives", label: "Initiatives", icon: Sparkles },
       { href: "/admin/cms/projects-impact", label: "Projects & Impact", icon: Landmark },
       { href: "/admin/cms/recognition", label: "Recognition & Media", icon: Newspaper },
       { href: "/admin/cms/sponsors", label: "Sponsors & Partners", icon: Handshake },

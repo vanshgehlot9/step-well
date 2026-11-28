@@ -61,7 +61,7 @@ export function MediaPickerModal({
     setLoading(true);
     getMediaAssets()
       .then((list) => setAssets(list))
-      .catch((err) => console.error("Failed to fetch media library:", err))
+      .catch((err) => console.warn("Failed to fetch media library:", err))
       .finally(() => setLoading(false));
   }, [isOpen, acceptType]);
 

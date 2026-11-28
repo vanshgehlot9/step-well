@@ -117,13 +117,13 @@ export default function AdminDashboardPage() {
         </Link>
 
         <Link
-          href="/admin/cms/featured-restorations"
+          href="/admin/initiatives"
           className="p-6 rounded-3xl bg-white border border-surface-blue-dark hover:border-accent-blue shadow-sm transition-all flex items-center justify-between gap-4"
         >
           <div>
             <Sparkles size={20} className="text-accent-blue mb-2" />
-            <h3 className="font-serif text-lg font-bold text-primary-blue">Featured Restorations</h3>
-            <p className="text-xs text-primary-blue-light/70 mt-1">Curate Toorji Ka Jhalra and restoration project stories.</p>
+            <h3 className="font-serif text-lg font-bold text-primary-blue">Our Initiatives</h3>
+            <p className="text-xs text-primary-blue-light/70 mt-1">Create, edit, publish, and feature conservation initiatives.</p>
           </div>
           <ArrowUpRight size={18} className="text-accent-blue shrink-0" />
         </Link>

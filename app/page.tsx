@@ -1,20 +1,19 @@
 "use client";
 
-import { useEffect, useCallback, useState } from "react";
+import { useEffect, useState } from "react";
 import Hero from "@/components/hero";
+import InitiativesShowcase from "@/components/initiatives-showcase";
 import Link from "next/link";
 import { Tweet } from "react-tweet";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { getActiveStores } from "@/lib/firebase-services";
-import { getPublishedProjects } from "@/lib/cms-services";
-import { Project, Store } from "@/lib/types";
+import { Store } from "@/lib/types";
 import { StoreCard } from "@/components/store-card";
 import { usePublicCMS } from "@/lib/use-cms";
 import {
   AboutFoundationCMS,
-  FeaturedRestorationsCMS,
   HomepageCMS,
   ImpactStatisticsCMS,
   MarketplaceContentCMS,
@@ -23,28 +22,20 @@ import {
 } from "@/lib/cms-types";
 import {
   DEFAULT_ABOUT_CMS,
-  DEFAULT_FEATURED_RESTORATIONS_CMS,
   DEFAULT_HOMEPAGE_CMS,
   DEFAULT_IMPACT_STATISTICS_CMS,
   DEFAULT_MARKETPLACE_CONTENT_CMS,
   DEFAULT_RECOGNITION_MEDIA_CMS,
   DEFAULT_SPONSORS_CMS,
-  INITIAL_PROJECTS_SEED,
 } from "@/lib/cms-defaults";
 
 export default function Home() {
-  const [currentProjectIndex, setCurrentProjectIndex] = useState(0);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const [stores, setStores] = useState<Store[]>([]);
-  const [featuredProjects, setFeaturedProjects] = useState<Project[]>(
-    INITIAL_PROJECTS_SEED.map((p, idx) => ({ id: `initial-${idx + 1}`, ...p }))
-  );
 
   const { data: homepageData } = usePublicCMS<HomepageCMS>("homepage");
   const { data: aboutData, unpublished: aboutUnpublished } = usePublicCMS<AboutFoundationCMS>("aboutFoundation");
   const { data: statsData, unpublished: statsUnpublished } = usePublicCMS<ImpactStatisticsCMS>("impactStatistics");
-  const { data: featuredMeta, unpublished: featuredUnpublished } =
-    usePublicCMS<FeaturedRestorationsCMS>("featuredRestorations");
   const { data: marketplaceData, unpublished: marketplaceUnpublished } =
     usePublicCMS<MarketplaceContentCMS>("marketplaceContent");
   const { data: recognitionData, unpublished: recognitionUnpublished } =
@@ -57,7 +48,6 @@ export default function Home() {
   const stats = (statsData?.items || DEFAULT_IMPACT_STATISTICS_CMS.items)
     .filter((s) => s.visible)
     .sort((a, b) => a.order - b.order);
-  const featCms = featuredMeta || DEFAULT_FEATURED_RESTORATIONS_CMS;
   const marketCms = marketplaceData || DEFAULT_MARKETPLACE_CONTENT_CMS;
   const recCms = recognitionData || DEFAULT_RECOGNITION_MEDIA_CMS;
   const recItems = (recCms.items || [])
@@ -71,45 +61,14 @@ export default function Home() {
   useEffect(() => {
     async function fetchDynamicData() {
       try {
-        const [storesData, projectsData] = await Promise.all([
-          getActiveStores(),
-          getPublishedProjects(true),
-        ]);
+        const storesData = await getActiveStores();
         setStores(storesData);
-        if (projectsData.length > 0) {
-          setFeaturedProjects(projectsData);
-        } else {
-          // Check if any published projects exist even if not marked featured
-          const allPub = await getPublishedProjects(false);
-          if (allPub.length > 0) setFeaturedProjects(allPub);
-        }
       } catch (err) {
-        console.error("Failed to load dynamic home data:", err);
+        console.warn("Failed to load dynamic home data:", err);
       }
     }
     fetchDynamicData();
   }, []);
-
-  const safeLen = Math.max(featuredProjects.length, 1);
-  const nextProject = useCallback(
-    () => setCurrentProjectIndex((prev) => (prev + 1) % safeLen),
-    [safeLen]
-  );
-  const prevProject = useCallback(
-    () => setCurrentProjectIndex((prev) => (prev - 1 + safeLen) % safeLen),
-    [safeLen]
-  );
-
-  useEffect(() => {
-    if (featuredProjects.length <= 1) return;
-    const intervalMs = Math.max(featCms.autoplaySeconds || 8, 3) * 1000;
-    const timer = setInterval(() => {
-      nextProject();
-    }, intervalMs);
-    return () => clearInterval(timer);
-  }, [nextProject, featuredProjects.length, featCms.autoplaySeconds]);
-
-  const activeProject = featuredProjects[currentProjectIndex % safeLen];
 
   return (
     <div className="flex flex-col min-h-screen bg-background">
@@ -226,144 +185,10 @@ export default function Home() {
           </section>
         )}
 
-      {/* 4. FEATURED PROJECTS — Proof of work */}
-      {homeVis.showFeaturedRestorations &&
-        !featuredUnpublished &&
-        featCms.visible !== false &&
-        activeProject && (
-          <section id="projects" className="py-10 md:py-16 bg-white scroll-mt-32 overflow-hidden relative">
-            <div className="max-w-[1440px] mx-auto px-6 md:px-12 lg:px-16 relative z-10">
-              <div className="text-center mb-10">
-                <span className="text-accent-blue font-semibold tracking-[0.2em] uppercase text-xs md:text-sm mb-3 block">
-                  {featCms.eyebrow}
-                </span>
-                <h2 className="font-serif text-3xl md:text-4xl font-bold text-primary-blue">
-                  {featCms.heading}
-                </h2>
-              </div>
-
-              <div className="w-full rounded-[20px] md:rounded-[28px] bg-white border border-surface-blue-dark overflow-hidden grid grid-cols-1 lg:grid-cols-2 shadow-[0_20px_60px_rgba(13,59,102,0.08)] relative">
-                {/* Left Side: Story Details */}
-                <div className="relative z-10 border-b lg:border-b-0 lg:border-r border-surface-blue-dark h-[480px] lg:h-[540px]">
-                  <AnimatePresence>
-                    <motion.div
-                      key={activeProject.id || currentProjectIndex}
-                      initial={{ opacity: 0, y: 15 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -15 }}
-                      transition={{ duration: 0.5, ease: "easeInOut" }}
-                      className="absolute inset-0 p-7 md:p-10 flex flex-col justify-center"
-                    >
-                      <span className="text-accent-blue font-semibold tracking-[0.2em] uppercase text-xs md:text-sm mb-3 block">
-                        {featCms.sublabel}
-                      </span>
-
-                      <h3 className="font-serif text-[clamp(1.5rem,3vw,2.6rem)] text-primary-blue font-bold leading-[1.1] mb-4 whitespace-pre-line">
-                        {activeProject.name}
-                      </h3>
-
-                      <div className="space-y-2 text-primary-blue-light/80 text-[0.9rem] md:text-[1rem] leading-[1.65] mb-6 whitespace-pre-line line-clamp-5">
-                        {activeProject.description}
-                      </div>
-
-                      {/* Metadata Grid */}
-                      <div className="grid grid-cols-2 md:grid-cols-3 gap-y-4 gap-x-4 border-y border-surface-blue-dark py-4 mb-6">
-                        <div>
-                          <div className="text-[10px] md:text-xs uppercase tracking-[0.15em] text-accent-blue mb-1 font-bold">
-                            Location
-                          </div>
-                          <div className="text-primary-blue font-medium text-sm">
-                            {activeProject.location}
-                          </div>
-                        </div>
-                        <div>
-                          <div className="text-[10px] md:text-xs uppercase tracking-[0.15em] text-accent-blue mb-1 font-bold">
-                            Category
-                          </div>
-                          <div className="text-primary-blue font-medium text-sm">
-                            {activeProject.category || "Stepwell Restoration"}
-                          </div>
-                        </div>
-                        <div>
-                          <div className="text-[10px] md:text-xs uppercase tracking-[0.15em] text-accent-blue mb-1 font-bold">
-                            Status
-                          </div>
-                          <div className="text-primary-blue font-medium text-sm capitalize">
-                            {activeProject.statusLabel || activeProject.status}
-                          </div>
-                        </div>
-                      </div>
-
-                      <div>
-                        <Link
-                          href={`/projects/${activeProject.slug}`}
-                          className="inline-flex items-center justify-center gap-2 rounded-full bg-primary-blue px-8 py-4 text-[1rem] font-medium text-white shadow-lg transition-all duration-300 hover:bg-primary-blue/90 hover:-translate-y-1"
-                        >
-                          {featCms.ctaLabel || "Read Full Story"} <ArrowRight size={18} />
-                        </Link>
-                      </div>
-                    </motion.div>
-                  </AnimatePresence>
-                </div>
-
-                {/* Right Side: Large Premium Image */}
-                <div className="relative overflow-hidden h-[300px] lg:h-[540px] flex items-center justify-center group bg-surface-blue">
-                  <AnimatePresence>
-                    <motion.img
-                      key={activeProject.id || currentProjectIndex}
-                      initial={{ opacity: 0, scale: 1.05 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0 }}
-                      transition={{ duration: 0.6, ease: "easeInOut" }}
-                      src={activeProject.featuredImage || activeProject.images?.[0] || "/toorji.jpg"}
-                      alt={activeProject.name}
-                      className="absolute inset-0 w-full h-full object-cover transition-transform duration-[10s] ease-out group-hover:scale-110"
-                    />
-                  </AnimatePresence>
-                  <div className="absolute inset-0 bg-gradient-to-t from-primary-blue/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
-                </div>
-              </div>
-
-              {/* Carousel Navigation Pill */}
-              {featuredProjects.length > 1 && (
-                <div className="flex justify-center mt-10 relative z-20">
-                  <div className="flex items-center gap-8 px-6 py-3 bg-white border border-surface-blue-dark/50 rounded-full shadow-[0_10px_40px_rgba(13,59,102,0.08)]">
-                    <button
-                      onClick={prevProject}
-                      className="text-primary-blue hover:text-accent-blue transition-colors flex items-center justify-center p-1"
-                      aria-label="Previous Project"
-                    >
-                      <ChevronLeft size={24} />
-                    </button>
-
-                    <div className="flex items-center gap-3">
-                      {featuredProjects.map((proj, idx) => (
-                        <button
-                          key={proj.id || idx}
-                          onClick={() => setCurrentProjectIndex(idx)}
-                          className={`h-2 rounded-full transition-all duration-500 ${
-                            idx === currentProjectIndex % safeLen
-                              ? "w-8 bg-primary-blue"
-                              : "w-2 bg-primary-blue/20 hover:bg-primary-blue/40"
-                          }`}
-                          aria-label={`Go to slide ${idx + 1}`}
-                        />
-                      ))}
-                    </div>
-
-                    <button
-                      onClick={nextProject}
-                      className="text-primary-blue hover:text-accent-blue transition-colors flex items-center justify-center p-1"
-                      aria-label="Next Project"
-                    >
-                      <ChevronRight size={24} />
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
-          </section>
-        )}
+      {/* 4. OUR INITIATIVES — Dynamic featured initiative + 4 initiative cards */}
+      {homeVis.showFeaturedRestorations && (
+        <InitiativesShowcase id="projects" variant="section" maxOtherInitial={4} />
+      )}
 
       {/* 5. FOUNDATION MARKETPLACE — Call to action: support us by shopping */}
       {homeVis.showMarketplace && !marketplaceUnpublished && marketCms.visible !== false && (

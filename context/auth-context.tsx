@@ -51,24 +51,33 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
-        // Fetch custom user profile from Firestore
-        const userDocRef = doc(db, "users", firebaseUser.uid);
-        const userDoc = await getDoc(userDocRef);
-        
         const providers = firebaseUser.providerData.map((p) => p.providerId);
+        try {
+          const userDocRef = doc(db, "users", firebaseUser.uid);
+          const userDoc = await getDoc(userDocRef);
 
-        if (userDoc.exists()) {
-          const userData = userDoc.data() as Omit<AppUser, "uid" | "email" | "displayName" | "photoURL">;
-          setUser({
-            uid: firebaseUser.uid,
-            email: firebaseUser.email || "",
-            displayName: firebaseUser.displayName || "",
-            photoURL: firebaseUser.photoURL || "",
-            role: userData.role || "customer",
-            providers,
-          });
-        } else {
-          // Fallback if no user doc exists
+          if (userDoc.exists()) {
+            const userData = userDoc.data() as Omit<AppUser, "uid" | "email" | "displayName" | "photoURL">;
+            setUser({
+              uid: firebaseUser.uid,
+              email: firebaseUser.email || "",
+              displayName: firebaseUser.displayName || "",
+              photoURL: firebaseUser.photoURL || "",
+              role: userData.role || "customer",
+              providers,
+            });
+          } else {
+            setUser({
+              uid: firebaseUser.uid,
+              email: firebaseUser.email || "",
+              displayName: firebaseUser.displayName || "",
+              photoURL: firebaseUser.photoURL || "",
+              role: "customer",
+              providers,
+            });
+          }
+        } catch (err) {
+          console.warn("Could not read user profile doc:", err);
           setUser({
             uid: firebaseUser.uid,
             email: firebaseUser.email || "",
